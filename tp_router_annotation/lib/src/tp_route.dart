@@ -120,20 +120,69 @@ abstract class TpTransitionsBuilder {
 
 /// Annotation to mark a widget class as a shell route.
 ///
-/// A shell route wraps other routes with a common UI (like a bottom navigation bar).
+/// A shell route wraps other routes with a common UI (like a bottom navigation
+/// bar or side drawer). There are two modes:
 ///
-/// Example:
+/// ## Mode 1: Regular ShellRoute (`isIndexedStack: false`)
+///
+/// For simple shell layouts where child routes share a common wrapper.
+/// The shell widget receives a `child` parameter.
+///
+/// ```dart
+/// @TpShellRoute(children: [HomePage, SettingsPage])
+/// class MainShell extends StatelessWidget {
+///   final Widget child;
+///   const MainShell({required this.child, super.key});
+///
+///   @override
+///   Widget build(BuildContext context) {
+///     return Scaffold(
+///       body: child,
+///       bottomNavigationBar: MyBottomNavBar(),
+///     );
+///   }
+/// }
+/// ```
+///
+/// ## Mode 2: StatefulShellRoute with IndexedStack (`isIndexedStack: true`)
+///
+/// For bottom navigation bars where each tab maintains its own navigation
+/// state. The shell widget receives a `navigationShell` parameter of type
+/// [TpStatefulNavigationShell].
+///
 /// ```dart
 /// @TpShellRoute(
-///   children: [HomePage, SettingsPage],
+///   children: [HomePage, SettingsPage, ProfilePage],
+///   isIndexedStack: true,
 /// )
-/// class MainShell extends StatelessWidget { ... }
+/// class MainShell extends StatelessWidget {
+///   final TpStatefulNavigationShell navigationShell;
+///   const MainShell({required this.navigationShell, super.key});
+///
+///   @override
+///   Widget build(BuildContext context) {
+///     return Scaffold(
+///       body: navigationShell,
+///       bottomNavigationBar: BottomNavigationBar(
+///         currentIndex: navigationShell.currentIndex,
+///         onTap: (index) => navigationShell.goBranch(index),
+///         items: [...],
+///       ),
+///     );
+///   }
+/// }
 /// ```
 class TpShellRoute {
   /// The list of child page types that this shell wraps.
+  ///
+  /// Each child becomes a branch when [isIndexedStack] is true.
   final List<Type> children;
 
   /// Whether to use StatefulShellRoute.indexedStack.
+  ///
+  /// When `true`, the shell uses [TpStatefulNavigationShell] which preserves
+  /// navigation state for each branch (tab). When `false`, it uses a simple
+  /// [ShellRoute] with a `child` widget parameter.
   final bool isIndexedStack;
 
   /// Creates a [TpShellRoute] annotation.
