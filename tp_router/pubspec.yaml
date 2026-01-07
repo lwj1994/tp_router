@@ -1,6 +1,6 @@
 name: tp_router
 description: A simplified Flutter router based on go_router with annotation support.
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/lwj1994/tp_router
 
 environment:
