@@ -4,8 +4,42 @@ import 'package:build/build.dart';
 import 'package:glob/glob.dart';
 import 'package:source_gen/source_gen.dart';
 
-/// Builder that collects all @TpRoute annotations and generates
-/// a single tp_router.gr.dart file.
+/// Code generator that scans Dart files for tp_router annotations and generates routing code.
+///
+/// This builder implements the [Builder] interface from build_runner and is responsible
+/// for generating type-safe routing code based on `@TpRoute`, `@TpShellRoute`, and
+/// `@TpStatefulShellRoute` annotations found in your Flutter application.
+///
+/// ## How It Works
+///
+/// 1. **Scans**: Searches all `.dart` files in the `lib/` directory for annotated classes
+/// 2. **Analyzes**: Extracts routing configuration from annotations and constructor parameters
+/// 3. **Generates**: Creates a single output file (default: `lib/tp_router.gr.dart`) containing:
+///    - Type-safe route classes (e.g., `HomeRoute`, `UserRoute`)
+///    - Route configuration objects (`TpRouteInfo`, `TpShellRouteInfo`)
+///    - Global route list (`tpRoutes`)
+///
+/// ## Generated Code
+///
+/// For each `@TpRoute` annotated class, the builder generates a corresponding route class
+/// that extends `TpRouteData` with type-safe parameter handling and navigation methods.
+///
+/// ## Configuration
+///
+/// Configure the output file location in `build.yaml`:
+///
+/// ```yaml
+/// builders:
+///   tp_router_generator:
+///     options:
+///       output: lib/routes/my_routes.g.dart
+/// ```
+///
+/// This class is not intended to be used directly. Instead, use it via build_runner:
+///
+/// ```bash
+/// flutter pub run build_runner build
+/// ```
 class TpRouterBuilder implements Builder {
   static const _tpRouteChecker = TypeChecker.fromUrl(
     'package:tp_router_annotation/src/tp_route.dart#TpRoute',
@@ -596,15 +630,15 @@ class TpRouterBuilder implements Builder {
       buffer.writeln(
         "  static final navigatorGlobalKey = GlobalKey<NavigatorState>(debugLabel: '${route.navigatorKey}');",
       );
-      buffer.writeln(
-        "  static const navigatorKey = '${route.navigatorKey}';",
-      );
+      buffer.writeln("  static const navigatorKey = '${route.navigatorKey}';");
     }
     buffer.writeln();
 
     // Find child routes by navigatorKey
-    final branchesMap =
-        _groupChildRoutesByBranch(route.navigatorKey, allRoutes);
+    final branchesMap = _groupChildRoutesByBranch(
+      route.navigatorKey,
+      allRoutes,
+    );
     final sortedBranchIndices = branchesMap.keys.toList()..sort();
 
     if (route.isIndexedStack) {
@@ -674,11 +708,13 @@ class TpRouterBuilder implements Builder {
       }
       if (route.transitionDuration != Duration.zero) {
         buffer.writeln(
-            '    transitionDuration: const Duration(microseconds: ${route.transitionDuration.inMicroseconds}),');
+          '    transitionDuration: const Duration(microseconds: ${route.transitionDuration.inMicroseconds}),',
+        );
       }
       if (route.reverseTransitionDuration != Duration.zero) {
         buffer.writeln(
-            '    reverseTransitionDuration: const Duration(microseconds: ${route.reverseTransitionDuration.inMicroseconds}),');
+          '    reverseTransitionDuration: const Duration(microseconds: ${route.reverseTransitionDuration.inMicroseconds}),',
+        );
       }
 
       buffer.writeln('  );');
@@ -723,11 +759,13 @@ class TpRouterBuilder implements Builder {
       }
       if (route.transitionDuration != Duration.zero) {
         buffer.writeln(
-            '    transitionDuration: const Duration(microseconds: ${route.transitionDuration.inMicroseconds}),');
+          '    transitionDuration: const Duration(microseconds: ${route.transitionDuration.inMicroseconds}),',
+        );
       }
       if (route.reverseTransitionDuration != Duration.zero) {
         buffer.writeln(
-            '    reverseTransitionDuration: const Duration(microseconds: ${route.reverseTransitionDuration.inMicroseconds}),');
+          '    reverseTransitionDuration: const Duration(microseconds: ${route.reverseTransitionDuration.inMicroseconds}),',
+        );
       }
 
       // Generate parentNavigatorKey
@@ -749,10 +787,7 @@ class TpRouterBuilder implements Builder {
   }
 
   /// Generates a Route class for navigation.
-  String _generateRouteClass(
-    _RouteData route,
-    List<_BaseRouteData> allRoutes,
-  ) {
+  String _generateRouteClass(_RouteData route, List<_BaseRouteData> allRoutes) {
     final buffer = StringBuffer();
     final routeClassName = route.routeClassName;
 
@@ -865,7 +900,8 @@ class TpRouterBuilder implements Builder {
     }
     if (route.redirect != null) {
       buffer.writeln(
-          '    redirect: (context, ${route.params.isEmpty ? '_' : 'state'}) async {');
+        '    redirect: (context, ${route.params.isEmpty ? '_' : 'state'}) async {',
+      );
 
       if (route.params.isNotEmpty) {
         buffer.writeln('      final settings = state;');
