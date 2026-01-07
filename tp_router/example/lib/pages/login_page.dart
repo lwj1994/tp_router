@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tp_router/tp_router.dart';
-import '../tp_router.g.dart';
+import '../tp_router.gr.dart';
 
 @TpRoute(path: '/login')
 class LoginPage extends StatelessWidget {

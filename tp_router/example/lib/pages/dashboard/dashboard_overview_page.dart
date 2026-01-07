@@ -1,4 +1,4 @@
-import 'package:example/tp_router.g.dart';
+import 'package:example/tp_router.gr.dart';
 import 'package:flutter/material.dart';
 import 'package:tp_router/tp_router.dart';
 

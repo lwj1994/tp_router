@@ -77,7 +77,7 @@ class UserPage extends StatelessWidget {
 dart run build_runner build
 ```
 
-这将会生成 `lib/tp_router.g.dart` (默认路径)。
+这将会生成 `lib/tp_router.gr.dart` (默认路径)。
 
 ### 3. 初始化路由
 
@@ -86,7 +86,7 @@ dart run build_runner build
 ```dart
 import 'package:flutter/material.dart';
 import 'package:tp_router/tp_router.dart';
-import 'tp_router.g.dart'; // 导入生成的文件
+import 'tp_router.gr.dart'; // 导入生成的文件
 
 void main() {
   final router = TpRouter(
@@ -212,7 +212,7 @@ class MainShellPage extends StatelessWidget {
 
 ### 自定义输出路径
 
-默认情况下，代码生成于 `lib/tp_router.g.dart`。你可以在 `build.yaml` 中自定义此路径：
+默认情况下，代码生成于 `lib/tp_router.gr.dart`。你可以在 `build.yaml` 中自定义此路径：
 
 ```yaml
 targets:

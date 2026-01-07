@@ -3,7 +3,7 @@ import 'package:tp_router/tp_router.dart';
 import 'analytics_page.dart';
 import 'reports_page.dart';
 import 'dashboard_overview_page.dart';
-import '../../tp_router.g.dart';
+import '../../tp_router.gr.dart';
 
 @TpShellRoute(
   children: [DashboardOverviewPage, AnalyticsPage, ReportsPage],

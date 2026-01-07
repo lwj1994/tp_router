@@ -1,8 +1,19 @@
+targets:
+  $default:
+    builders:
+      tp_router_generator:tp_router_generator:
+        enabled: true
+
 builders:
-  tp_router:
-    import: "package:tp_router_generator/builder.dart"
-    builder_factories: ["tpRouterBuilder"]
-    build_extensions: {"lib/$lib$": ["lib/tp_router.g.dart"]}
+  tp_router_generator:
+    import: "package:tp_router_generator/src/builder.dart"
+    builder_factories: [ "tpRouterBuilder" ]
+    build_extensions: { ".dart": [ ".gr.dart" ] }
     auto_apply: dependents
     build_to: source
-    required_inputs: [".dart"]
+    # run after freezed/json/dataforge/auto_route/chopper
+    required_inputs:
+      - ".freezed.dart"
+      - ".data.dart"
+      
+

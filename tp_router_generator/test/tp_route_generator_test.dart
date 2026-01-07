@@ -13,7 +13,7 @@ void main() {
       expect(
         builder.buildExtensions,
         equals({
-          r'lib/$lib$': ['lib/tp_router.g.dart'],
+          r'lib/$lib$': ['lib/tp_router.gr.dart'],
         }),
       );
     });

@@ -5,7 +5,7 @@ import 'package:glob/glob.dart';
 import 'package:source_gen/source_gen.dart';
 
 /// Builder that collects all @TpRoute annotations and generates
-/// a single tp_router.g.dart file.
+/// a single tp_router.gr.dart file.
 class TpRouterBuilder implements Builder {
   static const _tpRouteChecker = TypeChecker.fromUrl(
     'package:tp_router_annotation/src/tp_route.dart#TpRoute',
@@ -22,7 +22,7 @@ class TpRouterBuilder implements Builder {
 
   final String output;
 
-  TpRouterBuilder({this.output = 'lib/tp_router.g.dart'});
+  TpRouterBuilder({this.output = 'lib/tp_router.gr.dart'});
 
   @override
   Map<String, List<String>> get buildExtensions => {

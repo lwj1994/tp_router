@@ -77,7 +77,7 @@ Run the build runner to generate the routing table:
 dart run build_runner build
 ```
 
-This will generate `lib/tp_router.g.dart` (default path).
+This will generate `lib/tp_router.gr.dart` (default path).
 
 ### 3. Initialize Router
 
@@ -86,7 +86,7 @@ In your `main.dart`, initialize `TpRouter` with the generated routes list.
 ```dart
 import 'package:flutter/material.dart';
 import 'package:tp_router/tp_router.dart';
-import 'tp_router.g.dart'; // Import generated file
+import 'tp_router.gr.dart'; // Import generated file
 
 void main() {
   final router = TpRouter(
@@ -212,15 +212,15 @@ class MainShellPage extends StatelessWidget {
 
 ### Custom Output Path
 
-By default, code is generated in `lib/tp_router.g.dart`. You can customize this in `build.yaml`:
+By default, code is generated in `lib/tp_router.gr.dart`. You can customize this in `build.yaml`:
 
 ```yaml
 targets:
   $default:
     builders:
-      tp_router_generator:tp_router:
+      tp_router_generator:
         options:
-          output: lib/routes/app_routes.dart
+          output: lib/router/route.gr.dart
 ```
 
 ---
