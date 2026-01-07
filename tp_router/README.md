@@ -1,5 +1,12 @@
 # TpRouter
 
+| Package | Version |
+|---------|---------|
+| [tp_router](https://pub.dev/packages/tp_router) | [![pub package](https://img.shields.io/pub/v/tp_router.svg)](https://pub.dev/packages/tp_router) |
+| [tp_router_annotation](https://pub.dev/packages/tp_router_annotation) | [![pub package](https://img.shields.io/pub/v/tp_router_annotation.svg)](https://pub.dev/packages/tp_router_annotation) |
+| [tp_router_generator](https://pub.dev/packages/tp_router_generator) | [![pub package](https://img.shields.io/pub/v/tp_router_generator.svg)](https://pub.dev/packages/tp_router_generator) |
+
+
 A simplified, type-safe, and annotation-driven routing library for Flutter, built on top of `go_router`.
 
 Stop writing boilerplate routing tables manually. Let `tp_router` handle it for you with strong typing and compile-time safety.

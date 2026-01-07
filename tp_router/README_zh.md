@@ -1,5 +1,12 @@
 # TpRouter
 
+| Package | Version |
+|---------|---------|
+| [tp_router](https://pub.dev/packages/tp_router) | [![pub package](https://img.shields.io/pub/v/tp_router.svg)](https://pub.dev/packages/tp_router) |
+| [tp_router_annotation](https://pub.dev/packages/tp_router_annotation) | [![pub package](https://img.shields.io/pub/v/tp_router_annotation.svg)](https://pub.dev/packages/tp_router_annotation) |
+| [tp_router_generator](https://pub.dev/packages/tp_router_generator) | [![pub package](https://img.shields.io/pub/v/tp_router_generator.svg)](https://pub.dev/packages/tp_router_generator) |
+
+
 一个基于 `go_router` 构建的，简化、类型安全且由注解驱动的 Flutter 路由库。
 
 别再手动编写繁琐的路由表了。让 `tp_router` 为你处理一切，享受强类型和编译时安全带来的便利。
