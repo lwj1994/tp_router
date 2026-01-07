@@ -17,7 +17,7 @@ dependencies:
   flutter:
     sdk: flutter
   go_router: ^17.0.1
-  tp_router_annotation: ^0.1.0
+  tp_router_annotation:
 
 dev_dependencies:
   flutter_test:
