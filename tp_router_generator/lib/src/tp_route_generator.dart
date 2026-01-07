@@ -641,6 +641,15 @@ class TpRouterBuilder implements Builder {
       }
       buffer.writeln('],');
 
+      // Generate observersBuilder
+      if (route.observers.isNotEmpty) {
+        buffer.writeln('    observersBuilder: () => [');
+        for (final observer in route.observers) {
+          buffer.writeln('      $observer(),');
+        }
+        buffer.writeln('    ],');
+      }
+
       // Generate parentNavigatorKey
       /*
       final parentKeyRef =

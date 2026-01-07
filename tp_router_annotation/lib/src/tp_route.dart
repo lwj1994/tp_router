@@ -17,7 +17,7 @@ import 'package:flutter/widgets.dart';
 /// @TpRoute(path: '/details', transitionsBuilder: TpFadeTransition())
 /// class DetailsPage extends StatelessWidget { ... }
 /// ```
-  class TpRoute {
+class TpRoute {
   /// The URL path for this route.
   ///
   /// Example: '/home', '/user/:id', '/settings'

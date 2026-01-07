@@ -289,6 +289,9 @@ class MainShellRoute {
       _branchKey1,
       _branchKey2,
     ],
+    observersBuilder: () => [
+      AObserver(),
+    ],
     opaque: true,
   );
 }

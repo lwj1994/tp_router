@@ -318,6 +318,10 @@ class TpStatefulShellRouteInfo extends TpRouteBase {
   final Duration transitionDuration;
   final Duration reverseTransitionDuration;
 
+  /// Builder for navigator observers.
+  /// Used to create fresh observer instances for each branch.
+  final List<NavigatorObserver> Function()? observersBuilder;
+
   const TpStatefulShellRouteInfo({
     required this.builder,
     required this.branches,
@@ -332,6 +336,7 @@ class TpStatefulShellRouteInfo extends TpRouteBase {
     this.transition,
     this.transitionDuration = Duration.zero,
     this.reverseTransitionDuration = Duration.zero,
+    this.observersBuilder,
   });
 
   @override
@@ -370,6 +375,7 @@ class TpStatefulShellRouteInfo extends TpRouteBase {
                   ? branchNavigatorKeys![index]
                   : null,
           routes: routes.map((r) => r.toGoRoute(config: config)).toList(),
+          observers: observersBuilder?.call(),
         );
       }).toList(),
     );
