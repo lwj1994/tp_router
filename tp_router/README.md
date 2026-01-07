@@ -245,6 +245,23 @@ class DashboardShell extends StatelessWidget { ... }
 class StatsPage extends StatelessWidget { ... }
 ```
 
+#### 4. Configure Page and Transitions
+You can customize page behavior, transitions, and observers for Shell Routes just like regular routes.
+
+```dart
+@TpShellRoute(
+  navigatorKey: 'modal_shell',
+  // Make the shell transparent (e.g. for dialogs)
+  opaque: false, 
+  // Add a custom transition
+  transition: TpFadeTransition,
+  transitionDuration: Duration(milliseconds: 300),
+  // Add observers
+  observers: [MyObserver],
+)
+class ModalShellPage extends StatelessWidget { ... }
+```
+
 ---
 
 ## Configuration

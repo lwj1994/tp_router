@@ -83,10 +83,51 @@ void main() {
       expect(_testGetExampleValue('Map'), 'value');
     });
   });
+
+  group('Shell Route Logic', () {
+    test('finds shell global key', () {
+      final routes = [
+        MockShellRouteData('MainShell', 'MainRoute', null, 'main'),
+        MockRouteData('Home', 'HomeRoute', 'main'),
+      ];
+      expect(
+        _testFindShellRouteGlobalKey('main', routes),
+        'MainRoute.navigatorGlobalKey',
+      );
+      expect(_testFindShellRouteGlobalKey('other', routes), null);
+      expect(_testFindShellRouteGlobalKey(null, routes), null);
+    });
+
+    test('groups routes by branch', () {
+      final routes = [
+        MockRouteData('Home', 'HomeRoute', 'main', branchIndex: 0),
+        MockRouteData('Settings', 'SettingsRoute', 'main', branchIndex: 1),
+        MockRouteData('Detail', 'DetailRoute', 'main', branchIndex: 0),
+        MockRouteData('Other', 'OtherRoute', 'other'), // Should be ignored
+        MockShellRouteData('NestedShell', 'NestedRoute', 'main', 'nested',
+            branchIndex: 1),
+      ];
+
+      final groups = _testGroupChildRoutesByBranch('main', routes);
+
+      expect(groups.keys.length, 2);
+      expect(groups.containsKey(0), true);
+      expect(groups.containsKey(1), true);
+
+      final branch0 = groups[0]!;
+      expect(branch0.length, 2);
+      expect(branch0[0].className, 'Home');
+      expect(branch0[1].className, 'Detail');
+
+      final branch1 = groups[1]!;
+      expect(branch1.length, 2);
+      expect(branch1[0].className, 'Settings');
+      expect(branch1[1].className, 'NestedShell');
+    });
+  });
 }
 
-// Test helper functions that expose private methods for testing
-// These mirror the private methods in TpRouterBuilder
+// Test helper functions and mocks
 
 String _testGenerateRouteClassName(String className) {
   String result = className;
@@ -123,4 +164,61 @@ String _testGetExampleValue(String baseType) {
     default:
       return 'value';
   }
+}
+
+// Mocks for Shell Logic Tests
+
+abstract class MockBaseRouteData {
+  final String className;
+  final String routeClassName;
+  final String? parentNavigatorKey;
+  final int branchIndex;
+
+  MockBaseRouteData(
+      this.className, this.routeClassName, this.parentNavigatorKey,
+      {this.branchIndex = 0});
+}
+
+class MockShellRouteData extends MockBaseRouteData {
+  final String navigatorKey;
+
+  MockShellRouteData(String className, String routeClassName,
+      String? parentNavigatorKey, this.navigatorKey, {int branchIndex = 0})
+      : super(className, routeClassName, parentNavigatorKey,
+            branchIndex: branchIndex);
+}
+
+class MockRouteData extends MockBaseRouteData {
+  MockRouteData(
+      String className, String routeClassName, String? parentNavigatorKey,
+      {int branchIndex = 0})
+      : super(className, routeClassName, parentNavigatorKey,
+            branchIndex: branchIndex);
+}
+
+String? _testFindShellRouteGlobalKey(
+  String? parentKey,
+  List<MockBaseRouteData> allRoutes,
+) {
+  if (parentKey == null) return null;
+  for (final route in allRoutes) {
+    if (route is MockShellRouteData && route.navigatorKey == parentKey) {
+      return '${route.routeClassName}.navigatorGlobalKey';
+    }
+  }
+  return null;
+}
+
+Map<int, List<MockBaseRouteData>> _testGroupChildRoutesByBranch(
+  String navigatorKey,
+  List<MockBaseRouteData> allRoutes,
+) {
+  final branches = <int, List<MockBaseRouteData>>{};
+  for (final route in allRoutes) {
+    if ((route is MockRouteData || route is MockShellRouteData) &&
+        route.parentNavigatorKey == navigatorKey) {
+      branches.putIfAbsent(route.branchIndex, () => []).add(route);
+    }
+  }
+  return branches;
 }

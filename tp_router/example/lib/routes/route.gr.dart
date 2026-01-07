@@ -89,6 +89,10 @@ class DashboardShellRoute {
       DashboardOverviewRoute.routeInfo,
       ReportsRoute.routeInfo,
     ],
+    observers: [
+      DashboardObserver(),
+    ],
+    opaque: true,
   );
 }
 
@@ -259,10 +263,6 @@ class LoginRoute extends TpRouteData {
 }
 
 class MainShellRoute {
-  static final navigatorGlobalKey =
-      GlobalKey<NavigatorState>(debugLabel: 'main');
-  static const navigatorKey = 'main';
-
   static final _branchKey0 =
       GlobalKey<NavigatorState>(debugLabel: 'main_branch_0');
   static final _branchKey1 =
@@ -289,6 +289,7 @@ class MainShellRoute {
       _branchKey1,
       _branchKey2,
     ],
+    opaque: true,
   );
 }
 

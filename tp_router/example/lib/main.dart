@@ -5,6 +5,7 @@ import 'routes/route.gr.dart';
 void main() {
   // Use generated routes
   final router = TpRouter(
+    defaultTransition: TpCupertinoPageTransition(),
     routes: tpRoutes,
     routerNeglect: true, // Demo new parameter
   );

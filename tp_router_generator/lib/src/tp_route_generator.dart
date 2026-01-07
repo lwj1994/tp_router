@@ -62,6 +62,7 @@ class TpRouterBuilder implements Builder {
               'package:${buildStep.inputId.package}/',
             );
             imports.add(importPath);
+            imports.addAll(routeData.extraImports);
 
             // Add redirect import if present
             if (routeData.redirect?.importPath != null) {
@@ -92,6 +93,7 @@ class TpRouterBuilder implements Builder {
               'package:${buildStep.inputId.package}/',
             );
             imports.add(importPath);
+            imports.addAll(shellData.extraImports);
           }
         }
       } catch (e) {
@@ -171,6 +173,35 @@ class TpRouterBuilder implements Builder {
         annotation.peek('parentNavigatorKey')?.stringValue;
     final branchIndex = annotation.peek('branchIndex')?.intValue ?? 0;
 
+    final extraImports = <String>{};
+
+    // Extract onExit
+    String? onExit;
+    final onExitReader = annotation.peek('onExit');
+    if (onExitReader != null && !onExitReader.isNull) {
+      final func = onExitReader.objectValue.toFunctionValue();
+      if (func != null) {
+        onExit = func.name;
+        extraImports.add(func.library.identifier);
+      }
+    }
+
+    final fullscreenDialog =
+        annotation.peek('fullscreenDialog')?.boolValue ?? false;
+    final opaque = annotation.peek('opaque')?.boolValue ?? true;
+    final barrierDismissible =
+        annotation.peek('barrierDismissible')?.boolValue ?? false;
+
+    // Extract barrierColor (Color object)
+    int? barrierColor;
+    final colorReader = annotation.peek('barrierColor');
+    if (colorReader != null && !colorReader.isNull) {
+      barrierColor = colorReader.objectValue.getField('value')?.toIntValue();
+    }
+
+    final barrierLabel = annotation.peek('barrierLabel')?.stringValue;
+    final maintainState = annotation.peek('maintainState')?.boolValue ?? true;
+
     return _RouteData(
       className: className,
       routeClassName: routeClassName,
@@ -187,6 +218,14 @@ class TpRouterBuilder implements Builder {
       ),
       parentNavigatorKey: parentNavigatorKey,
       branchIndex: branchIndex,
+      onExit: onExit,
+      fullscreenDialog: fullscreenDialog,
+      opaque: opaque,
+      barrierDismissible: barrierDismissible,
+      barrierColor: barrierColor,
+      barrierLabel: barrierLabel,
+      maintainState: maintainState,
+      extraImports: extraImports,
     );
   }
 
@@ -285,6 +324,40 @@ class TpRouterBuilder implements Builder {
     final branchIndex = annotation.peek('branchIndex')?.intValue ?? 0;
     final isIndexedStack = annotation.read('isIndexedStack').boolValue;
 
+    final extraImports = <String>{};
+
+    // Extract observers
+    final observers = <String>[];
+    final observersReader = annotation.peek('observers');
+    if (observersReader != null) {
+      final list = observersReader.listValue;
+      for (final item in list) {
+        final type = item.toTypeValue();
+        if (type != null && type.element != null) {
+          observers.add(type.element!.name!);
+          if (type.element!.library != null) {
+            extraImports.add(type.element!.library!.identifier);
+          }
+        }
+      }
+    }
+
+    // Extract page config
+    final fullscreenDialog =
+        annotation.peek('fullscreenDialog')?.boolValue ?? false;
+    final opaque = annotation.peek('opaque')?.boolValue ?? false;
+    final barrierDismissible =
+        annotation.peek('barrierDismissible')?.boolValue ?? false;
+    final barrierLabel = annotation.peek('barrierLabel')?.stringValue;
+    final maintainState = annotation.peek('maintainState')?.boolValue ?? true;
+
+    // Extract barrierColor (Color object)
+    int? barrierColor;
+    final colorReader = annotation.peek('barrierColor');
+    if (colorReader != null && !colorReader.isNull) {
+      barrierColor = colorReader.objectValue.getField('value')?.toIntValue();
+    }
+
     return _ShellRouteData(
       className: className,
       routeClassName: routeClassName,
@@ -292,6 +365,20 @@ class TpRouterBuilder implements Builder {
       parentNavigatorKey: parentNavigatorKey,
       branchIndex: branchIndex,
       isIndexedStack: isIndexedStack,
+      observers: observers,
+      extraImports: extraImports,
+      fullscreenDialog: fullscreenDialog,
+      opaque: opaque,
+      barrierDismissible: barrierDismissible,
+      barrierColor: barrierColor,
+      barrierLabel: barrierLabel,
+      maintainState: maintainState,
+      transitionType: _extractTransitionType(annotation),
+      transitionDuration: _extractDuration(annotation, 'transitionDuration'),
+      reverseTransitionDuration: _extractDuration(
+        annotation,
+        'reverseTransitionDuration',
+      ),
     );
   }
 
@@ -431,7 +518,7 @@ class TpRouterBuilder implements Builder {
     // Generate Route classes
     for (final route in allRoutes) {
       if (route is _RouteData) {
-        buffer.writeln(_generateRouteClass(route));
+        buffer.writeln(_generateRouteClass(route, allRoutes));
       } else if (route is _ShellRouteData) {
         buffer.writeln(_generateShellRouteClass(route, allRoutes));
       }
@@ -484,6 +571,19 @@ class TpRouterBuilder implements Builder {
     return branches;
   }
 
+  String? _findShellRouteGlobalKey(
+    String? parentKey,
+    List<_BaseRouteData> allRoutes,
+  ) {
+    if (parentKey == null) return null;
+    for (final route in allRoutes) {
+      if (route is _ShellRouteData && route.navigatorKey == parentKey) {
+        return '${route.routeClassName}.navigatorGlobalKey';
+      }
+    }
+    return null; // Or throw error? For now, null means no parent found (or user provided weird key)
+  }
+
   String _generateShellRouteClass(
     _ShellRouteData route,
     List<_BaseRouteData> allRoutes,
@@ -492,10 +592,14 @@ class TpRouterBuilder implements Builder {
     buffer.writeln('class ${route.routeClassName} {');
 
     // Generate static navigatorKey constant and GlobalKey
-    buffer.writeln(
-      "  static final navigatorGlobalKey = GlobalKey<NavigatorState>(debugLabel: '${route.navigatorKey}');",
-    );
-    buffer.writeln("  static const navigatorKey = '${route.navigatorKey}';");
+    if (!route.isIndexedStack) {
+      buffer.writeln(
+        "  static final navigatorGlobalKey = GlobalKey<NavigatorState>(debugLabel: '${route.navigatorKey}');",
+      );
+      buffer.writeln(
+        "  static const navigatorKey = '${route.navigatorKey}';",
+      );
+    }
     buffer.writeln();
 
     // Find child routes by navigatorKey
@@ -536,6 +640,38 @@ class TpRouterBuilder implements Builder {
         buffer.write('_branchKey$i, ');
       }
       buffer.writeln('],');
+
+      // Generate parentNavigatorKey
+      /*
+      final parentKeyRef =
+          _findShellRouteGlobalKey(route.parentNavigatorKey, allRoutes);
+      if (parentKeyRef != null) {
+        buffer.writeln('    parentNavigatorKey: $parentKeyRef,');
+      }
+      */
+
+      // Generate page config
+      if (route.fullscreenDialog) buffer.writeln('    fullscreenDialog: true,');
+      if (route.opaque) buffer.writeln('    opaque: true,');
+      if (route.barrierDismissible)
+        buffer.writeln('    barrierDismissible: true,');
+      if (route.barrierColor != null)
+        buffer.writeln('    barrierColor: Color(${route.barrierColor}),');
+      if (route.barrierLabel != null)
+        buffer.writeln("    barrierLabel: '${route.barrierLabel}',");
+      if (!route.maintainState) buffer.writeln('    maintainState: false,');
+      if (route.transitionType != null) {
+        buffer.writeln('    transition: ${route.transitionType},');
+      }
+      if (route.transitionDuration != Duration.zero) {
+        buffer.writeln(
+            '    transitionDuration: const Duration(microseconds: ${route.transitionDuration.inMicroseconds}),');
+      }
+      if (route.reverseTransitionDuration != Duration.zero) {
+        buffer.writeln(
+            '    reverseTransitionDuration: const Duration(microseconds: ${route.reverseTransitionDuration.inMicroseconds}),');
+      }
+
       buffer.writeln('  );');
     } else {
       // Original Stateless ShellRoute
@@ -555,6 +691,46 @@ class TpRouterBuilder implements Builder {
         }
       }
       buffer.writeln('    ],');
+      // Generate observers
+      if (route.observers.isNotEmpty) {
+        buffer.writeln('    observers: [');
+        for (final observer in route.observers) {
+          buffer.writeln('      $observer(),');
+        }
+        buffer.writeln('    ],');
+      }
+      // Generate page config
+      if (route.fullscreenDialog) buffer.writeln('    fullscreenDialog: true,');
+      if (route.opaque) buffer.writeln('    opaque: true,');
+      if (route.barrierDismissible)
+        buffer.writeln('    barrierDismissible: true,');
+      if (route.barrierColor != null)
+        buffer.writeln('    barrierColor: Color(${route.barrierColor}),');
+      if (route.barrierLabel != null)
+        buffer.writeln("    barrierLabel: '${route.barrierLabel}',");
+      if (!route.maintainState) buffer.writeln('    maintainState: false,');
+      if (route.transitionType != null) {
+        buffer.writeln('    transition: ${route.transitionType},');
+      }
+      if (route.transitionDuration != Duration.zero) {
+        buffer.writeln(
+            '    transitionDuration: const Duration(microseconds: ${route.transitionDuration.inMicroseconds}),');
+      }
+      if (route.reverseTransitionDuration != Duration.zero) {
+        buffer.writeln(
+            '    reverseTransitionDuration: const Duration(microseconds: ${route.reverseTransitionDuration.inMicroseconds}),');
+      }
+
+      // Generate parentNavigatorKey
+      /*
+      // For StatefulShellRoute, parentNavigatorKey usually points to nothing valid
+      // because StatefulShells use branch keys. So we must rely on implicit nesting.
+      final parentKeyRef =
+          _findShellRouteGlobalKey(route.parentNavigatorKey, allRoutes);
+      if (parentKeyRef != null) {
+        buffer.writeln('    parentNavigatorKey: $parentKeyRef,');
+      }
+      */
       buffer.writeln('  );');
     }
 
@@ -564,7 +740,10 @@ class TpRouterBuilder implements Builder {
   }
 
   /// Generates a Route class for navigation.
-  String _generateRouteClass(_RouteData route) {
+  String _generateRouteClass(
+    _RouteData route,
+    List<_BaseRouteData> allRoutes,
+  ) {
     final buffer = StringBuffer();
     final routeClassName = route.routeClassName;
 
@@ -627,6 +806,38 @@ class TpRouterBuilder implements Builder {
       buffer.writeln("    name: '${route.name}',");
     }
     buffer.writeln('    isInitial: ${route.isInitial},');
+    // Generate parentNavigatorKey
+    // Generate parentNavigatorKey
+    /*
+    final parentKeyRef =
+        _findShellRouteGlobalKey(route.parentNavigatorKey, allRoutes);
+    if (parentKeyRef != null) {
+      buffer.writeln('    parentNavigatorKey: $parentKeyRef,');
+    }
+    */
+
+    if (route.onExit != null) {
+      buffer.writeln('    onExit: ${route.onExit},');
+    }
+
+    if (route.fullscreenDialog) {
+      buffer.writeln('    fullscreenDialog: true,');
+    }
+    if (!route.opaque) {
+      buffer.writeln('    opaque: false,');
+    }
+    if (route.barrierDismissible) {
+      buffer.writeln('    barrierDismissible: true,');
+    }
+    if (route.barrierColor != null) {
+      buffer.writeln('    barrierColor: Color(${route.barrierColor}),');
+    }
+    if (route.barrierLabel != null) {
+      buffer.writeln("    barrierLabel: '${route.barrierLabel}',");
+    }
+    if (!route.maintainState) {
+      buffer.writeln('    maintainState: false,');
+    }
     buffer.write('    params: [');
     if (route.params.isEmpty) {
       buffer.writeln('],');
@@ -975,6 +1186,14 @@ class _RouteData implements _BaseRouteData {
   final Duration reverseTransitionDuration;
   final String? parentNavigatorKey;
   final int branchIndex;
+  final String? onExit;
+  final bool fullscreenDialog;
+  final bool opaque;
+  final bool barrierDismissible;
+  final int? barrierColor;
+  final String? barrierLabel;
+  final bool maintainState;
+  final Set<String> extraImports;
 
   _RouteData({
     required this.className,
@@ -989,6 +1208,14 @@ class _RouteData implements _BaseRouteData {
     this.reverseTransitionDuration = const Duration(milliseconds: 300),
     this.parentNavigatorKey,
     this.branchIndex = 0,
+    this.onExit,
+    this.fullscreenDialog = false,
+    this.opaque = true,
+    this.barrierDismissible = false,
+    this.barrierColor,
+    this.barrierLabel,
+    this.maintainState = true,
+    this.extraImports = const {},
   });
 }
 
@@ -1002,6 +1229,18 @@ class _ShellRouteData implements _BaseRouteData {
   final String? parentNavigatorKey;
   final int branchIndex;
   final bool isIndexedStack;
+  final List<String> observers;
+
+  final Set<String> extraImports;
+  final bool fullscreenDialog;
+  final bool opaque;
+  final bool barrierDismissible;
+  final int? barrierColor;
+  final String? barrierLabel;
+  final bool maintainState;
+  final String? transitionType;
+  final Duration transitionDuration;
+  final Duration reverseTransitionDuration;
 
   _ShellRouteData({
     required this.className,
@@ -1010,6 +1249,17 @@ class _ShellRouteData implements _BaseRouteData {
     this.parentNavigatorKey,
     this.branchIndex = 0,
     required this.isIndexedStack,
+    this.observers = const [],
+    this.extraImports = const {},
+    this.fullscreenDialog = false,
+    this.opaque = false,
+    this.barrierDismissible = false,
+    this.barrierColor,
+    this.barrierLabel,
+    this.maintainState = true,
+    this.transitionType,
+    this.transitionDuration = Duration.zero,
+    this.reverseTransitionDuration = Duration.zero,
   });
 }
 

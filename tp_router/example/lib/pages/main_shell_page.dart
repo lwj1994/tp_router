@@ -4,6 +4,7 @@ import 'package:tp_router/tp_router.dart';
 @TpShellRoute(
   navigatorKey: 'main',
   isIndexedStack: true,
+  opaque: true,
 )
 class MainShellPage extends StatelessWidget {
   final TpStatefulNavigationShell navigationShell;

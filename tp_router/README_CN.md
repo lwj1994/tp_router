@@ -7,40 +7,41 @@
 | [tp_router_generator](https://pub.dev/packages/tp_router_generator) | [![pub package](https://img.shields.io/pub/v/tp_router_generator.svg)](https://pub.dev/packages/tp_router_generator) |
 
 
-一个基于 `go_router` 构建的，简化、类型安全且由注解驱动的 Flutter 路由库。
+一个简化、类型安全、注解驱动的 Flutter 路由库，基于 `go_router` 构建。
 
-别再手动编写繁琐的路由表了。让 `tp_router` 为你处理一切，享受强类型和编译时安全带来的便利。
+停止手动编写样板路由表。让 `tp_router` 为您处理一切，享受强类型和编译时安全。
 
 ## 特性
 
-*   🚀 **注解驱动**：直接在你的 Widget 上使用 `@TpRoute` 定义路由。
-*   🛡️ **类型安全解析**：自动从路径 (Path)、查询参数 (Query) 或额外数据 (Extra) 中提取 `int`, `double`, `bool`, `String` 以及复杂对象。
-*   🔄 **智能重定向**：强类型的重定向机制。在导航前检查强类型参数。
-*   🐚 **Shell 路由与嵌套导航**：全面支持 `ShellRoute` 和 `StatefulShellRoute` (IndexedStack)。
-*   ⚡ **简单的导航 API**：只需调用 `MyRoute().tp(context)`。
+*   🚀 **注解驱动**: 直接在 Widget 上使用 `@TpRoute` 定义路由。
+*   🛡️ **类型安全解析**: 自动从路径、查询参数或 extra 数据中提取 `int`, `double`, `bool`, `String` 和复杂对象。
+*   🔄 **智能重定向**: 强类型的重定向机制。在导航前检查参数。
+*   🐚 **Shell 路由 & 嵌套导航**: 完全支持 `ShellRoute` 和 `StatefulShellRoute` (IndexedStack)。
+*   ⚡ **简单的导航 API**: 只需调用 `MyRoute().tp(context)`。
+*   🎨 **页面配置**: 支持自定义转场动画、透明背景、全屏 Dialog 等配置。
 
 ---
 
 ## 安装
 
-在你的 `pubspec.yaml` 中添加以下内容：
+在 `pubspec.yaml` 中添加以下内容：
 
 ```yaml
 dependencies:
-  tp_router: ^0.0.1
-  tp_router_annotation: ^0.0.1
+  tp_router: ^0.1.0
+  tp_router_annotation: ^0.1.0
 
 dev_dependencies:
   build_runner: ^2.4.0
-  tp_router_generator: ^0.0.1
+  tp_router_generator: ^0.1.0
 ```
 
 ## 快速开始
 
-### 1. 定义你的路由
+### 1. 定义路由
 
-使用 `@TpRoute` 注解你的 Widget 类。
-构造函数中的参数会自动映射为路由参数！
+使用 `@TpRoute` 注解您的 Widget。
+构造函数参数会自动映射为路由参数！
 
 ```dart
 // lib/pages/user_page.dart
@@ -50,7 +51,7 @@ import 'package:tp_router/tp_router.dart';
 @TpRoute(path: '/user/:id')
 class UserPage extends StatelessWidget {
   // 自动从路径参数 ':id' 映射
-  // 或者从查询参数 'id'，亦或是 extra 中的 'id'
+  // 或者从查询参数 'id'，或者 extra 数据 'id'。
   final int id; 
   
   // 带有默认值的可选参数
@@ -64,7 +65,7 @@ class UserPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text('用户 $id - 区域 $section');
+    return Text('User $id - Section $section');
   }
 }
 ```
@@ -77,11 +78,11 @@ class UserPage extends StatelessWidget {
 dart run build_runner build
 ```
 
-这将会生成 `lib/tp_router.gr.dart` (默认路径)。
+这将生成 `lib/tp_router.gr.dart`（默认路径）。
 
-### 3. 初始化路由
+### 3. 初始化 Router
 
-在你的 `main.dart` 中，使用生成的路由表列表来初始化 `TpRouter`。
+在 `main.dart` 中，使用生成的路由列表初始化 `TpRouter`。
 
 ```dart
 import 'package:flutter/material.dart';
@@ -106,20 +107,20 @@ void main() {
 使用生成的路由类进行导航。这是 100% 类型安全的。
 
 ```dart
-// 推送新路由 (Push)
+// Push 一个新路由
 UserPage(id: 42).tp(context);
 
-// 替换当前路由 (Replace)
+// 替换当前路由
 LoginPage().tp(context, replacement: true);
 
-// 清除历史并进入新路由 (Clear history / Go)
+// 清空历史并跳转
 HomePage().tp(context, clearHistory: true);
 
-// 等待返回值 (Wait for result)
+// 等待返回结果
 final result = await SelectProfileRoute().tp<String>(context);
 ```
 
-你也可以弹出路由：
+也可以 pop：
 ```dart
 context.tpRouter.pop('Some Result');
 ```
@@ -129,26 +130,26 @@ context.tpRouter.pop('Some Result');
 ## 功能详解
 
 ### 参数提取策略
-TpRouter 会按照以下顺序智能解析构造函数参数：
-1.  **显式注解**：`@Path('id')` (强制从 Path 获取) 或 `@Query('q')` (强制从 Query 获取)。
-2.  **额外数据 (Extra)**：检查对象是否通过 `extra` 传递。
-3.  **路径参数 (Path Params)**：检查 URL 路径中是否包含该 key。
-4.  **查询参数 (Query Params)**：检查 URL 查询字符串。
+TpRouter 智能地按以下顺序解析构造函数参数：
+1.  **显式注解**: `@Path('id')` (强制路径参数) 或 `@Query('q')` (强制查询参数)。
+2.  **Extra 数据**: 检查对象是否通过 parameters 传递（extra map）。
+3.  **路径参数**: 检查 URL 路径是否包含该 key。
+4.  **查询参数**: 检查 URL 查询字符串。
 
 ### 重定向 / 守卫 (Guards)
 
 TpRouter 支持强大且类型安全的重定向系统。
-你可以定义一个重定向函数或类，通过它接收**完全实例化好的路由对象**。
+您可以定义一个重定向函数或类，接收**完全实例化后的路由对象**。
 
 **1. 定义重定向逻辑**
 ```dart
-// 你可以直接访问 'route.id'！
+// 您可以直接访问 'route.id'！
 FutureOr<TpRouteData?> checkUserAccess(BuildContext context, UserRoute route) {
   if (route.id == 999) {
     // 重定向到拦截页
     return const BlockedRoute();
   }
-  return null; // 不重定向，继续进入页面
+  return null; // 不重定向，继续访问
 }
 ```
 
@@ -158,7 +159,7 @@ FutureOr<TpRouteData?> checkUserAccess(BuildContext context, UserRoute route) {
 class UserPage extends StatelessWidget { ... }
 ```
 
-你也可以通过继承 `TpRedirect<T>` 类来更清晰地组织代码。
+您也可以使用扩展自 `TpRedirect<T>` 的类，让代码更整洁：
 
 ```dart
 class AuthRedirect extends TpRedirect<ProtectedRoute> {
@@ -178,15 +179,15 @@ class ProtectedPage extends StatelessWidget { ... }
 
 ### Shell 路由 (嵌套导航)
 
-TpRouter 提供了一种强大且解耦的方式来定义 Shell 路由，通过使用 **Key**。不需要手动列出子路由，只需给 Shell 分配一个 `navigatorKey`，并使用 `parentNavigatorKey` 关联子路由。
+TpRouter 提供了一种强大且解耦的方式来定义 Shell 路由，使用 **Keys**。您不需要手动列出 children，只需要给 Shell 分配一个 `navigatorKey`，并使用 `parentNavigatorKey` 关联子路由。
 
-这种方法让代码更整洁、模块化，非常适合复杂的应用！
+这种方法保持了代码的模块化，非常适合大型应用！
 
 #### 1. 定义 Shell 路由
-为你的 Shell 布局分配一个唯一的 `navigatorKey`。
+给您的 Shell 布局分配一个唯一的 `navigatorKey`。
 
 ```dart
-// 有状态 Shell (例如: 底部导航栏)
+// Stateful Shell (例如：底部导航栏)
 @TpShellRoute(
   navigatorKey: 'main', 
   isIndexedStack: true, // 保持每个分支的状态
@@ -205,8 +206,8 @@ class MainShellPage extends StatelessWidget {
         // 切换分支的辅助方法
         onTap: (index) => navigationShell.goBranch(index),
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '首页'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '设置'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
     );
@@ -215,57 +216,77 @@ class MainShellPage extends StatelessWidget {
 ```
 
 #### 2. 关联子路由
-只需在属于 Shell 的路由中添加 `parentNavigatorKey`。
-对于有状态 Shell (Tabs)，使用 `branchIndex` 将路由分配到特定的 Tab。
+只需在属于该 Shell 的任何路由上添加 `parentNavigatorKey`。
+对于 Stateful Shells (Tabs)，使用 `branchIndex` 将路由分配给特定的 Tab。
 
 ```dart
-// 分支 0: 首页
+// Branch 0: Home
 @TpRoute(path: '/', parentNavigatorKey: 'main', branchIndex: 0)
 class HomePage extends StatelessWidget { ... }
 
-// 分支 1: 设置
+// Branch 1: Settings
 @TpRoute(path: '/settings', parentNavigatorKey: 'main', branchIndex: 1)
 class SettingsPage extends StatelessWidget { ... }
 ```
 
-#### 3. 嵌套 Shell (进阶)
-你甚至可以在一个 Shell 中嵌套另一个 Shell！只需将内部 Shell 视为外部 Shell 的子路由。
+#### 3. 嵌套 Shell (高级)
+您甚至可以在一个 Shell 内嵌套另一个 Shell！只需将内部 Shell 视为外部 Shell 的子节点。
 
 ```dart
-// 位于 'main' Shell 第 3 个分支中的 Shell
+// 嵌在 'main' Shell 第3个分支内的 Shell
 @TpShellRoute(
   navigatorKey: 'dashboard',   // 该 Shell 自己的 Key
-  parentNavigatorKey: 'main',  // 父级 Shell 的 Key
-  branchIndex: 2,              // 放置在 'main' 的第 2 个分支中
+  parentNavigatorKey: 'main',  // 父 Shell 的 Key
+  branchIndex: 2,              // 放在 'main' 的第2个分支
 )
 class DashboardShell extends StatelessWidget { ... }
 
-// 嵌套 'dashboard' Shell 的子路由
+// 'dashboard' Shell 的子节点
 @TpRoute(path: '/dashboard/stats', parentNavigatorKey: 'dashboard')
 class StatsPage extends StatelessWidget { ... }
 ```
 
+#### 4. 配置页面和转场
+您可以像普通路由一样自定义 Shell 路由的页面行为、转场和 Observers。
+
+```dart
+@TpShellRoute(
+  navigatorKey: 'modal_shell',
+  parentNavigatorKey: 'root',
+  // 让 Shell 背景透明 (例如用于 Dialog)
+  opaque: false, 
+  // 添加自定义转场
+  transition: TpFadeTransition,
+  transitionDuration: Duration(milliseconds: 300),
+  // 添加 Observers
+  observers: [MyObserver],
+)
+class ModalShellPage extends StatelessWidget { ... }
+```
+
 ---
 
-## 配置
+## 自定义配置
 
 ### 自定义输出路径
 
-默认情况下，代码生成于 `lib/tp_router.gr.dart`。你可以在 `build.yaml` 中自定义此路径：
+默认情况下，代码生成在 `lib/tp_router.gr.dart`。您可以在 `build.yaml` 中修改：
 
 ```yaml
 targets:
   $default:
     builders:
-      tp_router_generator:tp_router:
+      tp_router_generator:
         options:
-          output: lib/routes/app_routes.dart
+          output: lib/router/route.gr.dart
 ```
 
 ---
 
 ## 迁移指南
 
-正在考虑从 `go_router` 或 `auto_router` 切换？查看我们的[迁移指南](https://github.com/lwj1994/tp_router/blob/main/tp_router/MIGRATION_zh.md)。
+考虑从 `go_router` 或 `auto_router` 迁移？查看我们的 [迁移指南](https://github.com/lwj1994/tp_router/blob/main/tp_router/MIGRATION.md).
 
-## 许可证
+## License
+
+MIT

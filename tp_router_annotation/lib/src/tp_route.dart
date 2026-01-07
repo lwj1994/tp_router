@@ -17,7 +17,7 @@ import 'package:flutter/widgets.dart';
 /// @TpRoute(path: '/details', transitionsBuilder: TpFadeTransition())
 /// class DetailsPage extends StatelessWidget { ... }
 /// ```
-class TpRoute {
+  class TpRoute {
   /// The URL path for this route.
   ///
   /// Example: '/home', '/user/:id', '/settings'
@@ -87,6 +87,33 @@ class TpRoute {
   /// Default is 0.
   final int branchIndex;
 
+  /// Handle logic when route is exiting.
+  ///
+  /// Must be a top-level function or static method:
+  /// `FutureOr<bool> Function(BuildContext, GoRouterState)`
+  final Function? onExit;
+
+  /// Whether this page is a fullscreen dialog (iOS modal style).
+  final bool fullscreenDialog;
+
+  /// Whether the page is opaque. Set to false for transparent dialogs.
+  final bool opaque;
+
+  /// Whether clicking the barrier dismisses the page.
+  final bool barrierDismissible;
+
+  /// The color of the barrier (background dimming).
+  /// The color of the barrier (background dimming).
+  ///
+  /// Example: `Color(0x80000000)` (Black 50%)
+  final Color? barrierColor;
+
+  /// Semantic label for the barrier.
+  final String? barrierLabel;
+
+  /// Whether to maintain state when the route is inactive.
+  final bool maintainState;
+
   /// Creates a [TpRoute] annotation.
   const TpRoute({
     this.path,
@@ -98,6 +125,13 @@ class TpRoute {
     this.reverseTransitionDuration = const Duration(milliseconds: 300),
     this.parentNavigatorKey,
     this.branchIndex = 0,
+    this.onExit,
+    this.fullscreenDialog = false,
+    this.opaque = true,
+    this.barrierDismissible = false,
+    this.barrierColor,
+    this.barrierLabel,
+    this.maintainState = true,
   });
 }
 
@@ -227,12 +261,63 @@ class TpShellRoute {
   /// [ShellRoute] with a `child` widget parameter.
   final bool isIndexedStack;
 
+  /// List of [NavigatorObserver] types to add to this shell's Navigator.
+  ///
+  /// The generator will instantiate these classes using their default constructor.
+  /// Example:
+  /// ```dart
+  /// @TpShellRoute(
+  ///   navigatorKey: 'main',
+  ///   observers: [MyObserver, AnotherObserver],
+  /// )
+  /// ```
+  final List<Type>? observers;
+
+  /// Whether this page is a fullscreen dialog (iOS modal style).
+  final bool fullscreenDialog;
+
+  /// Whether the page is opaque. Set to false for transparent dialogs.
+  final bool opaque;
+
+  /// Whether clicking the barrier dismisses the page.
+  final bool barrierDismissible;
+
+  /// The color of the barrier (background dimming).
+  ///
+  /// Example: `Color(0x80000000)` (Black 50%)
+  final Color? barrierColor;
+
+  /// Semantic label for the barrier.
+  final String? barrierLabel;
+
+  /// Whether to maintain state when the route is inactive.
+  final bool maintainState;
+
+  /// Custom transition builder for this route.
+  final TpTransitionsBuilder? transition;
+
+  /// Transition duration. Defaults to 300ms.
+  final Duration transitionDuration;
+
+  /// Reverse transition duration. Defaults to 300ms.
+  final Duration reverseTransitionDuration;
+
   /// Creates a [TpShellRoute] annotation.
   const TpShellRoute({
     required this.navigatorKey,
     this.parentNavigatorKey,
     this.branchIndex = 0,
     this.isIndexedStack = false,
+    this.observers,
+    this.fullscreenDialog = false,
+    this.opaque = false,
+    this.barrierDismissible = false,
+    this.barrierColor,
+    this.barrierLabel,
+    this.maintainState = true,
+    this.transition,
+    this.transitionDuration = Duration.zero,
+    this.reverseTransitionDuration = Duration.zero,
   });
 }
 

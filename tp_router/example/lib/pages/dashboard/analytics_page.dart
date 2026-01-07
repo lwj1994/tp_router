@@ -1,3 +1,4 @@
+import 'package:example/routes/route.gr.dart';
 import 'package:flutter/material.dart';
 import 'package:tp_router/tp_router.dart';
 
@@ -19,6 +20,10 @@ class AnalyticsPage extends StatelessWidget {
           ElevatedButton(
             onPressed: () => context.tpRouter.pop(),
             child: Text('Back to Overview'),
+          ),
+          ElevatedButton(
+            onPressed: () => DashboardOverviewRoute().tp(context),
+            child: Text('DashboardOverviewRoute'),
           ),
         ],
       ),

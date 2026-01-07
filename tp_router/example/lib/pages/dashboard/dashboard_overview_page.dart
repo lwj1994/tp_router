@@ -16,10 +16,9 @@ class DashboardOverviewPage extends StatelessWidget {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              // Navigate to analytics within the same shell
-              const AnalyticsRoute().tp(context);
+              context.tpRouter.pop();
             },
-            child: const Text('Go to Analytics'),
+            child: const Text('pop'),
           ),
           const SizedBox(height: 10),
           ElevatedButton(
