@@ -67,6 +67,13 @@ class TpRouterBuilder implements Builder {
             if (routeData.redirect?.importPath != null) {
               imports.add(routeData.redirect!.importPath!);
             }
+
+            // Add imports for complex types in parameters
+            for (final param in routeData.params) {
+              if (param.importPath != null) {
+                imports.add(param.importPath!);
+              }
+            }
           }
         }
 
@@ -307,6 +314,14 @@ class TpRouterBuilder implements Builder {
     // Determine source from annotations
     String? customName;
     String source = 'extra';
+    String? importPath;
+
+    final typeElement = paramType.element;
+    if (typeElement != null &&
+        typeElement.library != null &&
+        !typeElement.library!.isDartCore) {
+      importPath = typeElement.library!.identifier;
+    }
 
     // Check field annotations first
     final field = classElement.getField(paramName);
@@ -360,6 +375,7 @@ class TpRouterBuilder implements Builder {
       isNamed: param.isNamed,
       source: source,
       defaultValueCode: param.defaultValueCode,
+      importPath: importPath,
     );
   }
 
@@ -563,17 +579,22 @@ class TpRouterBuilder implements Builder {
       buffer.writeln("    name: '${route.name}',");
     }
     buffer.writeln('    isInitial: ${route.isInitial},');
-    buffer.writeln('    params: [');
-    for (final param in route.params) {
-      buffer.writeln('      TpParamInfo(');
-      buffer.writeln("        name: '${param.name}',");
-      buffer.writeln("        urlName: '${param.urlName}',");
-      buffer.writeln("        type: '${param.type}',");
-      buffer.writeln('        isRequired: ${param.isRequired},');
-      buffer.writeln("        source: '${param.source}',");
-      buffer.writeln('      ),');
+    buffer.write('    params: [');
+    if (route.params.isEmpty) {
+      buffer.writeln('],');
+    } else {
+      buffer.writeln();
+      for (final param in route.params) {
+        buffer.writeln('      TpParamInfo(');
+        buffer.writeln("        name: '${param.name}',");
+        buffer.writeln("        urlName: '${param.urlName}',");
+        buffer.writeln("        type: '${param.type}',");
+        buffer.writeln('        isRequired: ${param.isRequired},');
+        buffer.writeln("        source: '${param.source}',");
+        buffer.writeln('      ),');
+      }
+      buffer.writeln('    ],');
     }
-    buffer.writeln('    ],');
     if (route.redirect != null) {
       buffer.writeln(
           '    redirect: (context, ${route.params.isEmpty ? '_' : 'state'}) async {');
@@ -592,13 +613,17 @@ class TpRouterBuilder implements Builder {
         if (p.isNamed) {
           if (!p.isRequired && p.defaultValueCode != null) {
             constructorArgs.add(
-              '${p.name}: ${p.name} ?? ${p.defaultValueCode}',
+              '${p.name}: (${p.name} ?? ${p.defaultValueCode})',
             );
           } else {
             constructorArgs.add('${p.name}: ${p.name}');
           }
         } else {
-          constructorArgs.add(p.name);
+          if (!p.isRequired && p.defaultValueCode != null) {
+            constructorArgs.add('(${p.name} ?? ${p.defaultValueCode})');
+          } else {
+            constructorArgs.add(p.name);
+          }
         }
       }
       buffer.writeln('${constructorArgs.join(', ')});');
@@ -612,8 +637,7 @@ class TpRouterBuilder implements Builder {
       }
       buffer.writeln('    },');
     }
-    buffer
-        .writeln('    builder: (${route.params.isEmpty ? '_' : 'settings'}) {');
+    buffer.writeln('    builder: (settings) {');
     // Generate parameter extraction
     for (final param in route.params) {
       buffer.writeln(_generateParamExtraction(param));
@@ -624,38 +648,18 @@ class TpRouterBuilder implements Builder {
     for (final p in route.params) {
       if (p.isNamed) {
         if (!p.isRequired && p.defaultValueCode != null) {
-          // Only pass if value is not null, otherwise let default take over
-          // But extraction logic returns null if missing/failed.
-          // So we need to conditionally add this argument.
-          // However, we are inside a return statement, hard to do "if".
-          // Better approach:
-          // The extracted local variable uses nullable logic e.g. `final name = ...`.
-          // If we pass `name: name ?? default`, we duplicate default logic.
-          // Ideally: if local variable is null, DONT pass it to constructor.
-          // But Dart constructor call structure is static.
-          //
-          // Alternative: modify extraction to use default if provided?
-          // No, default is in constructor.
-          //
-          // If the parameter is named optional `this.age = 0`:
-          // Call `UserPage(age: age)` where `age` is null -> `age` becomes null (if nullable type) or error?
-          // Wait, if `age` is `int` (non-nullable) but we try to pass null, it errors.
-          // If `age` is `int?`, passing null overrides default value `0`?
-          // Dart behavior: `({int x = 1})` -> `f(x: null)` -> `x` is `null`. Default value is ignored if explicit null passed.
-          // So we MUST NOT pass `age: age` if  `age` is null, if we want default value to trigger.
-
-          // But we can't easily conditionally add args in a single return statement without helper variables or function.
-          // Since we are generating code, we can't change the call shape dynamically at runtime.
-
-          // Solution: Pass `value ?? defaultValue` at the call site?
-          // We have `defaultValueCode` available at generation time!
-          // So we can generate: `age: age ?? 0`.
-          constructorArgs.add('${p.name}: ${p.name} ?? ${p.defaultValueCode}');
+          constructorArgs.add(
+            '${p.name}: (${p.name} ?? ${p.defaultValueCode})',
+          );
         } else {
           constructorArgs.add('${p.name}: ${p.name}');
         }
       } else {
-        constructorArgs.add(p.name);
+        if (!p.isRequired && p.defaultValueCode != null) {
+          constructorArgs.add('(${p.name} ?? ${p.defaultValueCode})');
+        } else {
+          constructorArgs.add(p.name);
+        }
       }
     }
     buffer.writeln('${constructorArgs.join(', ')});');
@@ -843,8 +847,8 @@ ${generateExtraCheck(type)}
 
         // Path/Query String case (source is 'path' or 'query')
         if (isRequired) {
-          return '''    final $name = $stringSourceAccess ??
-        (throw ArgumentError('Missing required parameter: $name'));''';
+          return '''    final $name = ($stringSourceAccess ??
+        (throw ArgumentError('Missing required parameter: $name')));''';
         } else {
           return '''    final $name = $stringSourceAccess;''';
         }
@@ -860,11 +864,11 @@ ${generateExtraCheck(type)}
 
     return '''    final $name = (() {
       final extra = settings.extra;
-      if (extra is Map && extra.containsKey('$urlName')) {
+      if (extra.containsKey('$urlName')) {
         return extra['$urlName'] as $type;
       }
       if (extra is ${p.baseType}) {
-        return extra;
+        return extra as $type;
       }
       ${isRequired ? "throw ArgumentError('Missing required parameter: $name');" : "return null;"}
     })();''';
@@ -964,6 +968,7 @@ class _ParamData {
   final bool isNamed;
   final String source;
   final String? defaultValueCode;
+  final String? importPath;
 
   _ParamData({
     required this.name,
@@ -975,5 +980,6 @@ class _ParamData {
     required this.isNamed,
     required this.source,
     this.defaultValueCode,
+    this.importPath,
   });
 }

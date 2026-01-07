@@ -77,11 +77,11 @@ class TpRouteInfo extends TpRouteBase {
 
   TpRouteData _buildRouteData(GoRouterState state) {
     final extraData = state.extra;
-    return _BuilderRouteData(
+    return _ContextRouteData(
       fullPath: state.uri.toString(),
       pathParams: state.pathParameters,
       queryParams: state.uri.queryParameters,
-      extra: extraData is Map<String, dynamic> ? extraData : const {},
+      extra: extraData,
     );
   }
 
@@ -147,7 +147,7 @@ class TpRouteInfo extends TpRouteBase {
 }
 
 /// Internal route data implementation for builder context.
-class _BuilderRouteData extends TpRouteData {
+class _ContextRouteData extends TpRouteData {
   @override
   final String fullPath;
 
@@ -157,17 +157,15 @@ class _BuilderRouteData extends TpRouteData {
   @override
   final Map<String, String> queryParams;
 
-  final Map<String, dynamic> _extra;
-
   @override
-  Map<String, dynamic> get extra => _extra;
+  final dynamic extra;
 
-  const _BuilderRouteData({
+  const _ContextRouteData({
     required this.fullPath,
     required this.pathParams,
     required this.queryParams,
-    required Map<String, dynamic> extra,
-  }) : _extra = extra;
+    required this.extra,
+  });
 }
 
 /// A shell route that wraps a child route with a shell UI.

@@ -17,6 +17,7 @@ dev_dependencies:
   build_runner: ^2.4.0
   tp_router_generator:
     path: ../../tp_router_generator
+  flutter_lints: ^5.0.0
 
 
 flutter:

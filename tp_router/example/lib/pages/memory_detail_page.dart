@@ -1,0 +1,26 @@
+import 'package:flutter/material.dart';
+import 'package:tp_router/tp_router.dart';
+import '../models/memory_detail.dart';
+
+@TpRoute(path: '/memory-detail')
+class MemoryDetailPage extends StatelessWidget {
+  final MemoryDetail memory;
+  final MemoryDetail memory2;
+
+  const MemoryDetailPage({
+    super.key,
+    required this.memory2,
+    this.memory =
+        const MemoryDetail(id: 'internal', content: 'Internal Default'),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Memory Detail')),
+      body: Center(
+        child: Text('Memory: $memory'),
+      ),
+    );
+  }
+}

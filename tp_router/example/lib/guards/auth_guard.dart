@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:tp_router/tp_router.dart';
-import '../tp_router.gr.dart';
+import '../routes/route.gr.dart';
 
 FutureOr<TpRouteData?> authRedirect(BuildContext context, TpRouteData state) {
   // Check auth status (mock)
@@ -10,5 +10,4 @@ FutureOr<TpRouteData?> authRedirect(BuildContext context, TpRouteData state) {
   if (!isAuthenticated) {
     return const LoginRoute();
   }
-  return null;
 }

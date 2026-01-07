@@ -3,6 +3,7 @@
 
 import 'package:tp_router/tp_router.dart';
 import 'package:example/guards/auth_guard.dart';
+import 'package:example/models/memory_detail.dart';
 import 'package:example/pages/dashboard/analytics_page.dart';
 import 'package:example/pages/dashboard/dashboard_overview_page.dart';
 import 'package:example/pages/dashboard/dashboard_shell.dart';
@@ -11,6 +12,7 @@ import 'package:example/pages/details_page.dart';
 import 'package:example/pages/home_page.dart';
 import 'package:example/pages/login_page.dart';
 import 'package:example/pages/main_shell_page.dart';
+import 'package:example/pages/memory_detail_page.dart';
 import 'package:example/pages/protected_page.dart';
 import 'package:example/pages/settings_page.dart';
 import 'package:example/pages/user_page.dart';
@@ -33,7 +35,7 @@ class AnalyticsRoute extends TpRouteData {
     isInitial: false,
     params: [
     ],
-    builder: (_) {
+    builder: (settings) {
       return AnalyticsPage();
     },
   );
@@ -65,7 +67,7 @@ class DashboardOverviewRoute extends TpRouteData {
     isInitial: false,
     params: [
     ],
-    builder: (_) {
+    builder: (settings) {
       return DashboardOverviewPage();
     },
   );
@@ -109,7 +111,7 @@ class ReportsRoute extends TpRouteData {
     isInitial: false,
     params: [
     ],
-    builder: (_) {
+    builder: (settings) {
       return ReportsPage();
     },
   );
@@ -181,7 +183,7 @@ class DetailsRoute extends TpRouteData {
       }
       return parsed;
     })();
-      return DetailsPage(title: title ?? 'Details', level: level ?? 1);
+      return DetailsPage(title: (title ?? 'Details'), level: (level ?? 1));
     },
     transition: const TpSlideTransition(),
     transitionDuration: const Duration(microseconds: 500000),
@@ -223,7 +225,7 @@ class HomeRoute extends TpRouteData {
     isInitial: true,
     params: [
     ],
-    builder: (_) {
+    builder: (settings) {
       return HomePage();
     },
   );
@@ -255,7 +257,7 @@ class LoginRoute extends TpRouteData {
     isInitial: false,
     params: [
     ],
-    builder: (_) {
+    builder: (settings) {
       return LoginPage();
     },
   );
@@ -287,6 +289,84 @@ class MainShellRoute {
 }
 
 
+/// Route class for [MemoryDetailPage].
+///
+/// Usage:
+/// ```dart
+/// MemoryDetailRoute(memory2: value).tp(context);
+/// ```
+class MemoryDetailRoute extends TpRouteData {
+  final MemoryDetail memory2;
+  final MemoryDetail memory;
+
+  const MemoryDetailRoute({
+    required this.memory2,
+    this.memory = const MemoryDetail(id: 'internal', content: 'Internal Default'),
+  });
+
+  /// The route path.
+  static const String path = '/memory-detail';
+
+  /// The route info for this route.
+  static final TpRouteInfo routeInfo = TpRouteInfo(
+    path: '/memory-detail',
+    isInitial: false,
+    params: [
+      TpParamInfo(
+        name: 'memory2',
+        urlName: 'memory2',
+        type: 'MemoryDetail',
+        isRequired: true,
+        source: 'extra',
+      ),
+      TpParamInfo(
+        name: 'memory',
+        urlName: 'memory',
+        type: 'MemoryDetail',
+        isRequired: false,
+        source: 'extra',
+      ),
+    ],
+    builder: (settings) {
+    final memory2 = (() {
+      final extra = settings.extra;
+      if (extra.containsKey('memory2')) {
+        return extra['memory2'] as MemoryDetail;
+      }
+      if (extra is MemoryDetail) {
+        return extra as MemoryDetail;
+      }
+      throw ArgumentError('Missing required parameter: memory2');
+    })();
+    final memory = (() {
+      final extra = settings.extra;
+      if (extra.containsKey('memory')) {
+        return extra['memory'] as MemoryDetail;
+      }
+      if (extra is MemoryDetail) {
+        return extra as MemoryDetail;
+      }
+      return null;
+    })();
+      return MemoryDetailPage(memory2: memory2, memory: (memory ?? const MemoryDetail(id: 'internal', content: 'Internal Default')));
+    },
+  );
+
+  @override
+  String get fullPath {
+    var p = '/memory-detail';
+    return p;
+  }
+
+  @override
+  Map<String, dynamic> get extra => {
+    'memory2': memory2,
+    'memory': memory,
+  };
+
+}
+
+
 /// Route class for [ProtectedPage].
 ///
 /// Usage:
@@ -309,7 +389,7 @@ class ProtectedRoute extends TpRouteData {
       final route = ProtectedRoute();
       return authRedirect(context, route);
     },
-    builder: (_) {
+    builder: (settings) {
       return ProtectedPage();
     },
   );
@@ -342,7 +422,7 @@ class SettingsRoute extends TpRouteData {
     isInitial: false,
     params: [
     ],
-    builder: (_) {
+    builder: (settings) {
       return SettingsPage();
     },
   );
@@ -430,7 +510,7 @@ class UserRoute extends TpRouteData {
       }
       return parsed;
     })();
-      return UserPage(id: id, name: name ?? '', age: age ?? 0);
+      return UserPage(id: id, name: (name ?? ''), age: (age ?? 0));
     },
   );
 
@@ -458,6 +538,7 @@ List<TpRouteBase> get tpRoutes => [
   DetailsRoute.routeInfo,
   LoginRoute.routeInfo,
   MainShellRoute.routeInfo,
+  MemoryDetailRoute.routeInfo,
   ProtectedRoute.routeInfo,
   UserRoute.routeInfo,
 ];

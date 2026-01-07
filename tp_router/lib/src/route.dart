@@ -46,7 +46,7 @@ abstract class TpRouteData {
   Map<String, String> get queryParams => const {};
 
   /// Extra data passed to the route.
-  Map<String, dynamic> get extra => const {};
+  dynamic get extra => null;
 
   /// Error associated with this route, if any.
   Object? get error => null;
@@ -169,7 +169,7 @@ abstract class TpRouteData {
   T? getExtraAs<T>() {
     final e = extra;
     if (e is T) {
-      return e as T;
+      return e;
     }
     return null;
   }

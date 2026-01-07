@@ -74,3 +74,4 @@ pubspec.lock
 
 # ... but DO check it in for examples or apps if you have any
 !**/example/pubspec.lock
+**/build

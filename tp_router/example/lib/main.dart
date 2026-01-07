@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tp_router/tp_router.dart';
-import 'tp_router.gr.dart';
+import 'routes/route.gr.dart';
 
 void main() {
   // Use generated routes
