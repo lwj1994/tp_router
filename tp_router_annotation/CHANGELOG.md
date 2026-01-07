@@ -1,4 +1,10 @@
+## 0.1.1
+
+* Documentation improvements and package metadata updates.
+* Added repository and issue tracker URLs.
+
 ## 0.1.0
+
 
 * Improved `TpShellRoute` documentation with examples for both modes.
 * Added detailed API documentation for `isIndexedStack` parameter.

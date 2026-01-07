@@ -1,4 +1,10 @@
+## 0.1.1
+
+* Updated go_router dependency to ^17.0.1.
+* Documentation improvements and bug fixes.
+
 ## 0.1.0
+
 
 * Changed `TpRouteData.extra` type from `Map<String, dynamic>` to `dynamic` for flexibility.
 * Improved type handling for complex extra parameters.
