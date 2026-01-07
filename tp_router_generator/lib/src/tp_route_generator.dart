@@ -26,8 +26,8 @@ class TpRouterBuilder implements Builder {
 
   @override
   Map<String, List<String>> get buildExtensions => {
-    r'lib/$lib$': [output],
-  };
+        r'lib/$lib$': [output],
+      };
 
   @override
   Future<void> build(BuildStep buildStep) async {
@@ -575,11 +575,14 @@ class TpRouterBuilder implements Builder {
     }
     buffer.writeln('    ],');
     if (route.redirect != null) {
-      buffer.writeln('    redirect: (context, state) async {');
+      buffer.writeln(
+          '    redirect: (context, ${route.params.isEmpty ? '_' : 'state'}) async {');
 
-      buffer.writeln('      final settings = state;');
-      for (final param in route.params) {
-        buffer.writeln(_generateParamExtraction(param));
+      if (route.params.isNotEmpty) {
+        buffer.writeln('      final settings = state;');
+        for (final param in route.params) {
+          buffer.writeln(_generateParamExtraction(param));
+        }
       }
 
       // Instantiate route
@@ -609,7 +612,8 @@ class TpRouterBuilder implements Builder {
       }
       buffer.writeln('    },');
     }
-    buffer.writeln('    builder: (settings) {');
+    buffer
+        .writeln('    builder: (${route.params.isEmpty ? '_' : 'settings'}) {');
     // Generate parameter extraction
     for (final param in route.params) {
       buffer.writeln(_generateParamExtraction(param));

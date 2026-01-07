@@ -33,7 +33,7 @@ class AnalyticsRoute extends TpRouteData {
     isInitial: false,
     params: [
     ],
-    builder: (settings) {
+    builder: (_) {
       return AnalyticsPage();
     },
   );
@@ -65,7 +65,7 @@ class DashboardOverviewRoute extends TpRouteData {
     isInitial: false,
     params: [
     ],
-    builder: (settings) {
+    builder: (_) {
       return DashboardOverviewPage();
     },
   );
@@ -109,7 +109,7 @@ class ReportsRoute extends TpRouteData {
     isInitial: false,
     params: [
     ],
-    builder: (settings) {
+    builder: (_) {
       return ReportsPage();
     },
   );
@@ -223,7 +223,7 @@ class HomeRoute extends TpRouteData {
     isInitial: true,
     params: [
     ],
-    builder: (settings) {
+    builder: (_) {
       return HomePage();
     },
   );
@@ -255,7 +255,7 @@ class LoginRoute extends TpRouteData {
     isInitial: false,
     params: [
     ],
-    builder: (settings) {
+    builder: (_) {
       return LoginPage();
     },
   );
@@ -305,12 +305,11 @@ class ProtectedRoute extends TpRouteData {
     isInitial: false,
     params: [
     ],
-    redirect: (context, state) async {
-      final settings = state;
+    redirect: (context, _) async {
       final route = ProtectedRoute();
       return authRedirect(context, route);
     },
-    builder: (settings) {
+    builder: (_) {
       return ProtectedPage();
     },
   );
@@ -343,7 +342,7 @@ class SettingsRoute extends TpRouteData {
     isInitial: false,
     params: [
     ],
-    builder: (settings) {
+    builder: (_) {
       return SettingsPage();
     },
   );
