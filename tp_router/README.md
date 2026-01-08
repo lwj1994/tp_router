@@ -6,26 +6,26 @@
 | [tp_router_annotation](https://pub.dev/packages/tp_router_annotation) | [![pub package](https://img.shields.io/pub/v/tp_router_annotation.svg)](https://pub.dev/packages/tp_router_annotation) |
 | [tp_router_generator](https://pub.dev/packages/tp_router_generator) | [![pub package](https://img.shields.io/pub/v/tp_router_generator.svg)](https://pub.dev/packages/tp_router_generator) |
 
+A simplified, type-safe, and annotation-driven routing library for Flutter.
 
-A simplified, type-safe, and annotation-driven routing library for Flutter, built on top of `go_router`.
+**Stop maintaining routing tables manually.**
+TpRouter automatically generates complex, nested routing tables based on your `NavKey` structure, offering a concise and elegant API for navigation and state management.
 
-Stop writing boilerplate routing tables manually. Let `tp_router` handle it for you with strong typing and compile-time safety.
+## Key Highlights
 
-## Features
+*   🚀 **Automatic Route Table**: Just annotate. We generate the entire routing tree, including complex nested shells, based on your `TpNavKey` associations.
+*   � **Concise Type-Safe API**: Navigate with elegance.
+    *   `UserRoute(id: 1).tp(context)`
+    *   `MainNavKey().tp(UserRoute(id: 1))`
+*   🐚 **NavKey-Driven Nesting**: Decouple your UI. Define Shells and nested routes simply by linking them to a `NavKey`. No massive route config files.
+*   🗑️ **Elegant Removal**: Imperatively remove any route (even deeply nested or in the background) with our smart **Pending Pop** strategy.
 
-*   🚀 **Annotation Driven**: Define routes directly on your widgets using `@TpRoute`.
-*   🗝️ **Type-Safe NavKeys**: No more magic strings! Use typed keys for safe and refactor-friendly shell navigation.
-*   🛡️ **Type-Safe Parsing**: Automatically extracts `int`, `double`, `bool`, `String`, and complex objects from path, query parameters, or extra data.
-*   🔄 **Smart Redirection**: Strong-typed redirection mechanism. Check parameters before navigating.
-*   🐚 **Shell Routes & Nested Navigation**: Full support for `ShellRoute` and `StatefulShellRoute` (IndexedStack).
-*   🗑️ **Smart Route Removal**: Imperatively remove routes (even background ones) with the elegant **Pending Pop** strategy.
-*   ⚡ **Simple Navigation API**: Just call `MyRoute().tp(context)`.
 
 ---
 
 ## Installation
 
-Add the following to your `pubspec.yaml`:
+Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
@@ -37,389 +37,179 @@ dev_dependencies:
   tp_router_generator: ^0.1.0
 ```
 
-## Getting Started
-
-### 1. Define Your Routes
-
-Annotate your widget with `@TpRoute`. 
-Constructor arguments are automatically mapped to route parameters!
-
-```dart
-// lib/pages/user_page.dart
-import 'package:flutter/material.dart';
-import 'package:tp_router/tp_router.dart';
-
-@TpRoute(path: '/user/:id')
-class UserPage extends StatelessWidget {
-  // Automatically mapped from path parameter ':id'
-  // Or query parameter 'id', or extra data 'id'.
-  final int id; 
-  
-  // Optional parameter with default value
-  final String section; 
-
-  const UserPage({
-    required this.id,
-    this.section = 'profile',
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Text('User $id - Section $section');
-  }
-}
-```
-
-### 2. Generate Code
-
-Run the build runner to generate the routing table:
-
+Run the generator:
 ```bash
 dart run build_runner build
 ```
 
-This will generate `lib/tp_router.gr.dart` (default path).
+---
 
-### 3. Initialize Router
+## 1. Essentials
 
-In your `main.dart`, initialize `TpRouter` with the generated routes list.
+### Define Routes
+Annotate your widget. Constructor arguments are automatically mapped.
 
 ```dart
-import 'package:flutter/material.dart';
-import 'package:tp_router/tp_router.dart';
-import 'tp_router.gr.dart'; // Import generated file
-
-void main() {
-  final router = TpRouter(
-    routes: tpRoutes, // Generated list of routes
-  );
-
-  runApp(MaterialApp.router(
-    routerConfig: router.routerConfig,
-  ));
+@TpRoute(path: '/user/:id')
+class UserPage extends StatelessWidget {
+  final int id; 
+  const UserPage({required this.id, super.key});
+  
+  @override
+  Widget build(BuildContext context) => Text('User $id');
 }
+```
+
+### Initialize
+Pass the generated `tpRoutes` to `TpRouter`.
+
+```dart
+// main.dart
+final router = TpRouter(routes: tpRoutes);
+
+runApp(MaterialApp.router(
+  routerConfig: router.routerConfig,
+));
 ```
 
 ---
 
-## Navigation
+## 2. Navigation System
 
-Navigate using the generated route classes. This is 100% type-safe.
+TpRouter offers two ways to navigate: **Context-based** (automatic) and **Key-based** (precise).
+
+### Context-based Navigation
+Simplest way. It automatically finds the closest navigator in the widget tree.
 
 ```dart
-// Push a new route
-UserPage(id: 42).tp(context);
+// Push a route
+UserRoute(id: 42).tp(context);
 
-// Replace the current route
+// Replace
 LoginPage().tp(context, replacement: true);
 
-// Clear history and go to new route
+// Clear history (e.g. after login)
 HomePage().tp(context, clearHistory: true);
 
-// Wait for a result
-final result = await SelectProfileRoute().tp<String>(context);
+// Pop
+context.tpRouter.pop();
 ```
 
-You can also pop:
+### Key-based Navigation (Recommended)
+Use **TpNavKey** for type-safe, accessible navigation from anywhere (even business logic).
+
+1. **Define a Key**:
 ```dart
-context.tpRouter.pop('Some Result');
-```
-
----
-
-## Capabilities
-
-### Type-Safe Navigator Keys
-
-Using strings for navigator keys (like `'root'`, `'shell'`) is error-prone and hard to refactor. TpRouter solves this with **TpNavKey**.
-
-*   **Compile-time Safety**: You can't mistype a class name.
-*   **Easy Refactoring**: Rename the class, and your IDE updates all references in annotations.
-*   **Centralized Definition**: All your navigation structure is defined in one place.
-*   **Zero Overhead**: It compiles down to efficient GlobalKey lookups.
-
-Just extend `TpNavKey` and use it everywhere!
-
-### Parameter Extraction Strategy
-TpRouter smartly resolves constructor parameters in this order:
-1.  **Explicit Annotation**: `@Path('id')` (Force path param) or `@Query('q')` (Force query param).
-2.  **Extra Data**: Checks if the object was passed via `extra` map.
-3.  **Path Parameters**: Checks if the URL path contains the key.
-4.  **Query Parameters**: Checks the URL query string.
-
-### Redirection / Guards
-
-TpRouter supports a powerful, type-safe redirection and lifecycle system. 
-You can define a redirect class that receives the **fully instantiated route object**.
-
-**1. Define a Redirect Logic**
-Extend `TpRedirect<T>` to create cleaner, organized guards.
-```dart
-class AuthRedirect extends TpRedirect<ProtectedRoute> {
-  const AuthRedirect();
-  @override
-  FutureOr<TpRouteData?> handle(BuildContext context, ProtectedRoute route) {
-    if (!AuthService.isLoggedIn) {
-      return const LoginRoute();
-    }
-    return null;
-  }
-}
-```
-
-**2. Attach to Route**
-Provide the **Type** of your redirect class to the annotation.
-```dart
-@TpRoute(path: '/protected', redirect: AuthRedirect)
-class ProtectedPage extends StatelessWidget { ... }
-```
-
-### Route Lifecycle (onExit)
-
-Similarly, you can handle route exit logic (e.g., confirm before leaving) by implementing `TpOnExit<T>`.
-
-```dart
-class ConfirmExit extends TpOnExit<FormRoute> {
-  const ConfirmExit();
-  @override
-  FutureOr<bool> onExit(BuildContext context, FormRoute route) async {
-    return await showConfirmDialog(context);
-  }
-}
-
-@TpRoute(path: '/form', onExit: ConfirmExit)
-class FormPage extends StatelessWidget { ... }
-```
-
-### Advanced: Reconstruction (fromData)
-
-Every generated route class has a static `fromData` method that can reconstruct a typed route instance from generic `TpRouteData` (e.g., from a deep link or raw path).
-
-```dart
-// Reconstruct from a generic data object
-final data = TpRouteData.fromPath('/user/123');
-final userRoute = UserRoute.fromData(data);
-print(userRoute.id); // 123
-```
-
-### Custom Page Construction
-
-`tp_router` allows you to fully customize how a `Page` is constructed. This is useful if you want to use `MaterialPage`, `CupertinoPage`, or custom logic like a bottom sheet.
-
-**1. Implement `TpPageFactory`**
-```dart
-class MyMaterialPageFactory extends TpPageFactory {
-  const MyMaterialPageFactory();
-
-  @override
-  Page<dynamic> buildPage(BuildContext context, TpRouteData data, Widget child) {
-    return MaterialPage(
-      key: data.pageKey,
-      child: child,
-      name: data.routeName,
-      arguments: data.extra,
-    );
-  }
-}
-```
-
-**2. Apply via Annotation**
-Specify the factory class in `@TpRoute` or `@TpShellRoute`.
-
-```dart
-@TpRoute(path: '/details', pageBuilder: MyMaterialPageFactory)
-class DetailsPage extends StatelessWidget { ... }
-```
-
-**3. Global Configuration**
-You can also set a default page builder for all routes in the `TpRouter` constructor:
-
-```dart
-final router = TpRouter(
-  routes: tpRoutes,
-  defaultPageBuilder: const MyMaterialPageFactory(),
-);
-```
-
-
-### Shell Routes (Nested Navigation)
-
-TpRouter provides a powerful and type-safe way to define shell routes using **navigator key classes**. Define your own `TpNavKey` subclasses for compile-time safety, then use them in annotations.
-
-This approach keeps your code clean, modular, and refactor-friendly!
-
-#### 1. Define Navigator Keys
-
-Create a file to define your navigator keys (e.g., `routes/nav_keys.dart`):
-
-```dart
-import 'package:tp_router/tp_router.dart';
-
-/// Navigator key for the main shell (bottom navigation).
 class MainNavKey extends TpNavKey {
   const MainNavKey() : super('main');
 }
-
-/// Navigator key for the dashboard shell.
-class DashboardNavKey extends TpNavKey {
-  const DashboardNavKey() : super('dashboard');
-}
 ```
 
-#### 2. Define a Shell Route
+2. **Navigate using the Key**:
+```dart
+// Navigate specifically on the 'main' navigator
+MainNavKey().tp(UserRoute(id: 42));
 
-Use your navigator key class in the `@TpShellRoute` annotation:
+// Pop from 'main' navigator
+MainNavKey().pop();
+
+// Check if can pop
+bool safe = MainNavKey().canPop;
+
+// Pop until condition
+MainNavKey().popUntil((route, data) => data?.routeName == UserRoute.kName);
+```
+
+---
+
+## 3. Shell & Nested Navigation
+
+Manage complex nested UI (like BottomNavigationBar) with **Shell Routes**.
+
+### Define a Shell
+Associate a `navigatorKey` with a shell.
 
 ```dart
-// Stateful Shell (e.g., BottomNavigationBar)
 @TpShellRoute(
-  navigatorKey: MainNavKey,       // Type-safe reference
-  isIndexedStack: true,           // Preserves state of each branch
+  navigatorKey: MainNavKey, // Defined above
+  isIndexedStack: true,     // Persist state of tabs
 )
 class MainShellPage extends StatelessWidget {
   final TpStatefulNavigationShell navigationShell;
-  
-  const MainShellPage({required this.navigationShell, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: navigationShell.currentIndex,
-        // Helper method to switch branches
-        onTap: (index) => navigationShell.goBranch(index),
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
-        ],
-      ),
-    );
-  }
+  // ... build BottomNavigationBar using navigationShell
 }
 ```
 
-#### 3. Associate Child Routes
-
-Use `parentNavigatorKey` with your navigator key class to associate routes with a shell.
-For stateful shells (tabs), use `branchIndex` to assign the route to a specific tab.
+### Assign Routes to Shell
+Use `parentNavigatorKey` to place a route inside a shell.
 
 ```dart
-// Branch 0: Home
-@TpRoute(path: '/', parentNavigatorKey: MainNavKey, branchIndex: 0)
+@TpRoute(path: '/home', parentNavigatorKey: MainNavKey, branchIndex: 0)
 class HomePage extends StatelessWidget { ... }
 
-// Branch 1: Settings
 @TpRoute(path: '/settings', parentNavigatorKey: MainNavKey, branchIndex: 1)
 class SettingsPage extends StatelessWidget { ... }
 ```
 
-#### 4. Nested Shells (Advanced)
-
-You can even nest a shell inside another shell! Just treat the inner shell as a child of the outer shell.
-
-*   **Rule 1 (Placement)**: The Inner Shell uses `parentNavigatorKey` + `branchIndex` to place itself inside the Outer Shell.
-*   **Rule 2 (Identity)**: The Inner Shell defines its OWN `navigatorKey` so its children can find it.
-
-```dart
-// A shell inside the 'main' shell's 3rd branch
-@TpShellRoute(
-  navigatorKey: DashboardNavKey,   // This shell's own key
-  parentNavigatorKey: MainNavKey,  // Parent shell's key (type-safe!)
-  branchIndex: 2,                  // Place in branch 2 of 'main'
-)
-class DashboardShell extends StatelessWidget { ... }
-
-// Children of the nested 'dashboard' shell
-@TpRoute(path: '/dashboard/stats', parentNavigatorKey: DashboardNavKey)
-class StatsPage extends StatelessWidget { ... }
-```
-
-#### 5. Runtime Navigation with Navigator Keys
-
-Use your navigator keys for targeted navigation operations:
-
-```dart
-// Navigate within a specific navigator
-SomeRoute().tp(navigatorKey: const DashboardNavKey());
-
-// Pop from a specific navigator
-context.tpRouter.pop(navigatorKey: const MainNavKey());
-
-// Get the GlobalKey for direct access
-final globalKey = const DashboardNavKey().globalKey;
-```
-
-#### 6. Configure Page and Observers
-
-You can customize page behavior, observers, and key configuration for Shell Routes. 
-
-> **Note**: Shell Routes do not have their own transitions as they act as a UI wrapper. Transitions are handled by the child routes being displayed within the shell.
-
-```dart
-@TpShellRoute(
-  navigatorKey: ModalNavKey,
-  // Make the shell transparent (e.g. for dialogs)
-  opaque: false,
-  // Add observers
-  observers: [MyObserver],
-)
-class ModalShellPage extends StatelessWidget { ... }
-```
-
 ---
 
-### Premium Experience: Swipe Back
+## 4. Advanced Features
 
-TpRouter provides a high-quality "Swipe Back" gesture (`TpPageType.swipeBack`) that works on both iOS and Android.
-
-*   **Full Screen Gesture**: By default, it allows swiping from any position on the screen to go back (customizable).
-*   **Native Feel**: Includes smooth animations and shadow effects that mimic the native iOS experience.
-*   **Conflict Resolution**: Smart enough to ignore swipes if the underlying child (like a horizontal list) is already handling the gesture.
-
----
-
-### Smart Remove
-
-Imperative route removal (e.g., removing a page from the middle of the stack) is typically restricted in `go_router` due to its declarative, URL-based architecture.
-
-TpRouter overcomes this limitation with a smart **Pending Pop** strategy:
-
-1.  **Top Route:** If the route is at the top, it is popped immediately.
-2.  **Background Route:** It is internally marked for removal. Since forcefully modifying the `go_router` stack can break URL consistency, TpRouter waits.
-3.  **Auto-Skip:** When the user eventually navigates back and the marked route is revealed, TpRouter **automatically pops it instantly**.
-
-This creates a seamless "deletion" experience for the user while maintaining full compatibility with `go_router`'s constraints.
-
-**Examples:**
+### Route Management
+Imperatively manage the stack, even for declarative routers like GoRouter.
 
 ```dart
-// 1. Remove a specific route instance
-// (Matches by route name and arguments)
-context.tpRouter.removeRoute(LoginRoute());
+// Remove specific route instance
+context.tpRouter.removeRoute(myRouteData);
 
-// 2. Remove by logic (State cleaning)
-// Example: Remove all screens related to a deleted order
-final deletedCount = context.tpRouter.removeWhere((data) {
-  return data.pathParams['orderId'] == '12345';
-});
-
-// 3. Remove all dialogs or specific patterns
-context.tpRouter.removeWhere((data) {
-  return data.fullPath.contains('/dialog/');
-});
+// Remove using predicate (e.g., clear all dialogs)
+context.tpRouter.removeWhere((data) => data.fullPath.contains('/dialog'));
 ```
 
-This feature is fully integrated with `TpRouteObserver`, ensuring resource cleanup and consistent state.
+### Guards & Redirects
+Type-safe redirection logic.
+
+```dart
+class AuthGuard extends TpRedirect<ProtectedRoute> {
+  @override
+  FutureOr<TpRouteData?> handle(BuildContext context, ProtectedRoute route) {
+    if (!loggedIn) return const LoginRoute();
+    return null; // Allowed
+  }
+}
+
+@TpRoute(path: '/protected', redirect: AuthGuard)
+class ProtectedPage extends StatelessWidget { ... }
+```
+
+### Route Lifecycle (onExit)
+Intercept back navigation (e.g., unsaved changes).
+
+```dart
+class UnsavedChangesGuard extends TpOnExit<EditorRoute> {
+  @override
+  FutureOr<bool> onExit(BuildContext context, EditorRoute route) async {
+    return await showDialog(...) ?? false;
+  }
+}
+
+@TpRoute(path: '/edit', onExit: UnsavedChangesGuard)
+class EditorPage extends StatelessWidget { ... }
+```
+
+### Runtime Parameters
+Access current route data anytime.
+
+```dart
+// Get current path on a specific navigator
+String path = MainNavKey().currentFullPath;
+```
 
 ---
 
 ## Configuration
 
-### Custom Output Path
-
-By default, code is generated in `lib/tp_router.gr.dart`. You can customize this in `build.yaml`:
+Customize generation output in `build.yaml`:
 
 ```yaml
 targets:
@@ -427,13 +217,8 @@ targets:
     builders:
       tp_router_generator:
         options:
-          output: lib/router/route.gr.dart
+          output: lib/routes.gr.dart
 ```
 
----
-
 ## Migration Guide
-
-Thinking about switching from `go_router` or `auto_router`? Check out our [Migration Guide](https://github.com/lwj1994/tp_router/blob/main/tp_router/MIGRATION.md).
-
-## License
+See [MIGRATION.md](MIGRATION.md).

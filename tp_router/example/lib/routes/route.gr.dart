@@ -36,6 +36,8 @@ class AnalyticsRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_AnalyticsRoute';
 
+  static const String kName = 'tp_router_AnalyticsRoute';
+
   /// Creates a [AnalyticsRoute] from [TpRouteData].
   static AnalyticsRoute fromData(TpRouteData data) {
     if (data is AnalyticsRoute) return data;
@@ -104,6 +106,8 @@ class DashboardOverviewRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_DashboardOverviewRoute';
 
+  static const String kName = 'tp_router_DashboardOverviewRoute';
+
   /// Creates a [DashboardOverviewRoute] from [TpRouteData].
   static DashboardOverviewRoute fromData(TpRouteData data) {
     if (data is DashboardOverviewRoute) return data;
@@ -164,6 +168,8 @@ class ReportsRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_ReportsRoute';
 
+  static const String kName = 'tp_router_ReportsRoute';
+
   /// Creates a [ReportsRoute] from [TpRouteData].
   static ReportsRoute fromData(TpRouteData data) {
     if (data is ReportsRoute) return data;
@@ -210,6 +216,8 @@ class DetailsRoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_DetailsRoute';
+
+  static const String kName = 'tp_router_DetailsRoute';
 
   /// Creates a [DetailsRoute] from [TpRouteData].
   static DetailsRoute fromData(TpRouteData data) {
@@ -315,6 +323,8 @@ class LoginRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_LoginRoute';
 
+  static const String kName = 'tp_router_LoginRoute';
+
   /// Creates a [LoginRoute] from [TpRouteData].
   static LoginRoute fromData(TpRouteData data) {
     if (data is LoginRoute) return data;
@@ -355,6 +365,8 @@ class HomeRoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_HomeRoute';
+
+  static const String kName = 'tp_router_HomeRoute';
 
   /// Creates a [HomeRoute] from [TpRouteData].
   static HomeRoute fromData(TpRouteData data) {
@@ -425,6 +437,8 @@ class SettingsRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_SettingsRoute';
 
+  static const String kName = 'tp_router_SettingsRoute';
+
   /// Creates a [SettingsRoute] from [TpRouteData].
   static SettingsRoute fromData(TpRouteData data) {
     if (data is SettingsRoute) return data;
@@ -471,6 +485,8 @@ class MemoryDetailRoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_MemoryDetailRoute';
+
+  static const String kName = 'tp_router_MemoryDetailRoute';
 
   /// Creates a [MemoryDetailRoute] from [TpRouteData].
   static MemoryDetailRoute fromData(TpRouteData data) {
@@ -575,6 +591,8 @@ class ProtectedRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_ProtectedRoute';
 
+  static const String kName = 'tp_router_ProtectedRoute';
+
   /// Creates a [ProtectedRoute] from [TpRouteData].
   static ProtectedRoute fromData(TpRouteData data) {
     if (data is ProtectedRoute) return data;
@@ -620,6 +638,8 @@ class RouteRemovalDemoRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_RouteRemovalDemoRoute';
 
+  static const String kName = 'tp_router_RouteRemovalDemoRoute';
+
   /// Creates a [RouteRemovalDemoRoute] from [TpRouteData].
   static RouteRemovalDemoRoute fromData(TpRouteData data) {
     if (data is RouteRemovalDemoRoute) return data;
@@ -660,6 +680,8 @@ class RouteStackPageARoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_RouteStackPageARoute';
+
+  static const String kName = 'tp_router_RouteStackPageARoute';
 
   /// Creates a [RouteStackPageARoute] from [TpRouteData].
   static RouteStackPageARoute fromData(TpRouteData data) {
@@ -702,6 +724,8 @@ class RouteStackPageBRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_RouteStackPageBRoute';
 
+  static const String kName = 'tp_router_RouteStackPageBRoute';
+
   /// Creates a [RouteStackPageBRoute] from [TpRouteData].
   static RouteStackPageBRoute fromData(TpRouteData data) {
     if (data is RouteStackPageBRoute) return data;
@@ -742,6 +766,8 @@ class RouteStackPageCRoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_RouteStackPageCRoute';
+
+  static const String kName = 'tp_router_RouteStackPageCRoute';
 
   /// Creates a [RouteStackPageCRoute] from [TpRouteData].
   static RouteStackPageCRoute fromData(TpRouteData data) {
@@ -791,6 +817,8 @@ class UserRoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_UserRoute';
+
+  static const String kName = 'tp_router_UserRoute';
 
   /// Creates a [UserRoute] from [TpRouteData].
   static UserRoute fromData(TpRouteData data) {

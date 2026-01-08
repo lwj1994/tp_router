@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'navigator_key_registry.dart';
+import 'route.dart';
+import 'tp_router.dart';
 
 /// Abstract base class for type-safe navigator keys.
 ///
@@ -105,6 +107,77 @@ abstract class TpNavKey {
   @override
   String toString() =>
       branch != null ? 'TpNavKey($key, branch: $branch)' : 'TpNavKey($key)';
+
+  /// Navigate to a route using this navigator key.
+  ///
+  /// This is a shortcut for [TpRouter.tp] with `navigatorKey: this`.
+  Future<T?> tp<T extends Object?>(
+    TpRouteData route, {
+    bool isReplace = false,
+    bool isClearHistory = false,
+  }) {
+    return TpRouter.instance.tp<T>(
+      route,
+      navigatorKey: this,
+      isReplace: isReplace,
+      isClearHistory: isClearHistory,
+    );
+  }
+
+  /// Pop the current route from this navigator.
+  ///
+  /// This is a shortcut for [TpRouter.pop] with `navigatorKey: this`.
+  void pop<T extends Object?>([T? result]) {
+    TpRouter.instance.pop<T>(navigatorKey: this, result: result);
+  }
+
+  /// Pop routes in this navigator until the predicate is satisfied.
+  ///
+  /// This is a shortcut for [TpRouter.popUntil] with `navigatorKey: this`.
+  void popUntil(
+      bool Function(Route<dynamic> route, TpRouteData? data) predicate) {
+    TpRouter.instance.popUntil(predicate, navigatorKey: this);
+  }
+
+  /// Pop until the first route in the stack.
+  void popToInitial() {
+    TpRouter.instance.popToInitial(navigatorKey: this);
+  }
+
+  /// Pop until the specified route is found.
+  void popTo(TpRouteData route) {
+    TpRouter.instance.popTo(route, navigatorKey: this);
+  }
+
+  /// Remove a route from this navigator.
+  ///
+  /// This is a shortcut for [TpRouter.removeRoute] with `navigatorKey: this`.
+  bool removeRoute(TpRouteData route) {
+    return TpRouter.instance.removeRoute(
+      route,
+      navigatorKey: this,
+    );
+  }
+
+  /// Remove all routes that match the given predicate from this navigator.
+  ///
+  /// This is a shortcut for [TpRouter.removeWhere] with `navigatorKey: this`.
+  int removeWhere(bool Function(TpRouteData data) predicate) {
+    return TpRouter.instance.removeWhere(
+      predicate,
+      navigatorKey: this,
+    );
+  }
+
+  /// Check if this navigator can pop.
+  ///
+  /// This is a shortcut for [TpRouter.canPop] with `navigatorKey: this`.
+  bool get canPop => TpRouter.instance.canPop(navigatorKey: this);
+
+  /// Get the current location in this navigator.
+  ///
+  /// This is a shortcut for [TpRouter.location] with `navigatorKey: this`.
+  String get currentFullPath => TpRouter.instance.location(navigatorKey: this);
 }
 
 /// Private implementation for factory constructor.

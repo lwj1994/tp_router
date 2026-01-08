@@ -224,6 +224,17 @@ abstract class TpRouteData {
     }
     return null;
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is TpRouteData &&
+        other.routeName == routeName &&
+        other.fullPath == fullPath;
+  }
+
+  @override
+  int get hashCode => Object.hash(routeName, fullPath);
 }
 
 /// Internal implementation for path-based navigation.

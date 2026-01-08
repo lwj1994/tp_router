@@ -878,6 +878,9 @@ class TpRouterBuilder implements Builder {
       "  String get routeName => 'tp_router_${route.routeClassName}';",
     );
     buffer.writeln();
+    buffer.writeln(
+        "  static const String kName = 'tp_router_${route.routeClassName}';");
+    buffer.writeln();
 
     buffer.writeln(
         '  /// Creates a [${route.routeClassName}] from [TpRouteData].');

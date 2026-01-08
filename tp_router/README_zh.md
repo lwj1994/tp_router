@@ -1,4 +1,4 @@
-# TpRouter
+# TpRouter 🚀
 
 | Package | Version |
 |---------|---------|
@@ -6,383 +6,215 @@
 | [tp_router_annotation](https://pub.dev/packages/tp_router_annotation) | [![pub package](https://img.shields.io/pub/v/tp_router_annotation.svg)](https://pub.dev/packages/tp_router_annotation) |
 | [tp_router_generator](https://pub.dev/packages/tp_router_generator) | [![pub package](https://img.shields.io/pub/v/tp_router_generator.svg)](https://pub.dev/packages/tp_router_generator) |
 
+家人们，谁还在手写路由表啊？😩 Flutter 路由本身就够让人头大了，用 GoRouter 还要写一堆配置，简直心累！💔
 
-一个基于 `go_router` 构建的，简化、类型安全且由注解驱动的 Flutter 路由库。
+**TpRouter 来救命了！** 🎉 它能根据你的 `NavKey` 自动生成复杂的嵌套路由表，而且 API 简洁到爆，简直是强迫症福音！✨
 
-别再手动编写繁琐的路由表了。让 `tp_router` 为你处理一切，享受强类型和编译时安全带来的便利。
+## 🌟 为什么必须用它？
 
-## 特性
-
-*   🚀 **注解驱动**：直接在你的 Widget 上使用 `@TpRoute` 定义路由。
-*   🛡️ **类型安全解析**：自动从路径 (Path)、查询参数 (Query) 或额外数据 (Extra) 中提取 `int`, `double`, `bool`, `String` 以及复杂对象。
-*   🔄 **智能重定向**：强类型的重定向机制。在导航前检查强类型参数。
-*   🐚 **Shell 路由与嵌套导航**：全面支持 `ShellRoute` 和 `StatefulShellRoute` (IndexedStack)。
-*   🗑️ **智能路由移除**：使用优雅的 **Pending Pop** 策略，命令式地移除路由（即使是后台路由）。
-*   ⚡ **简单的导航 API**：只需调用 `MyRoute().tp(context)`。
+*   🚀 **全自动生成路由表**：只需加个注解 `@TpRoute`，不管是简单的页面，还是复杂的 BottomNavigationBar 嵌套，全部自动搞定！再也不用写又臭又长的路由配置了！
+*   💎 **API 简洁又优雅**：告别字符串跳转！类型安全，如丝般顺滑~
+    *   `UserRoute(id: 1).tp(context)` 👈 就像调用函数一样简单
+    *   `MainNavKey().tp(UserRoute(id: 1))` 👈 指定导航栈跳转，精准打击
+*   🐚 **NavKey 驱动嵌套**：UI 解耦神器！定义 Shell 和子路由只需要关联同一个 `NavKey`，逻辑清晰，代码清爽！
+*   🗑️ **优雅移除路由**：GoRouter 不支持移除中间的路由？TpRouter 支持！独特的 **Pending Pop** 策略，想删哪页删哪页，不管它藏得多深！😎
 
 ---
 
-## 安装
+## 📦 极速上车 (Installation)
 
-在你的 `pubspec.yaml` 中添加以下内容：
+在 `pubspec.yaml` 里加上这几行：
 
 ```yaml
 dependencies:
-  tp_router: ^0.0.1
-  tp_router_annotation: ^0.0.1
+  tp_router: ^0.1.0
+  tp_router_annotation: ^0.1.0
 
 dev_dependencies:
   build_runner: ^2.4.0
-  tp_router_generator: ^0.0.1
+  tp_router_generator: ^0.1.0
 ```
 
-## 快速开始
-
-### 1. 定义你的路由
-
-使用 `@TpRoute` 注解你的 Widget 类。
-构造函数中的参数会自动映射为路由参数！
-
-```dart
-// lib/pages/user_page.dart
-import 'package:flutter/material.dart';
-import 'package:tp_router/tp_router.dart';
-
-@TpRoute(path: '/user/:id')
-class UserPage extends StatelessWidget {
-  // 自动从路径参数 ':id' 映射
-  // 或者从查询参数 'id'，亦或是 extra 中的 'id'
-  final int id; 
-  
-  // 带有默认值的可选参数
-  final String section; 
-
-  const UserPage({
-    required this.id,
-    this.section = 'profile',
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Text('用户 $id - 区域 $section');
-  }
-}
-```
-
-### 2. 生成代码
-
-运行 build runner 来生成路由表：
-
+跑一下生成器：
 ```bash
 dart run build_runner build
 ```
 
-这将会生成 `lib/tp_router.gr.dart` (默认路径)。
+---
 
-### 3. 初始化路由
+## 1. ⚡️ 快速开始
 
-在你的 `main.dart` 中，使用生成的路由表列表来初始化 `TpRouter`。
+### 定义路由
+在 Widget 上加个注解，构造函数参数直接映射成路由参数，简直不要太智能！🧠
 
 ```dart
-import 'package:flutter/material.dart';
-import 'package:tp_router/tp_router.dart';
-import 'tp_router.gr.dart'; // 导入生成的文件
-
-void main() {
-  final router = TpRouter(
-    routes: tpRoutes, // 生成的路由列表
-  );
-
-  runApp(MaterialApp.router(
-    routerConfig: router.routerConfig,
-  ));
+@TpRoute(path: '/user/:id')
+class UserPage extends StatelessWidget {
+  final int id; 
+  const UserPage({required this.id, super.key});
+  
+  @override
+  Widget build(BuildContext context) => Text('User $id');
 }
+```
+
+### 初始化
+把生成的 `tpRoutes` 塞给 `TpRouter`，完事！✅
+
+```dart
+// main.dart
+final router = TpRouter(routes: tpRoutes);
+
+runApp(MaterialApp.router(
+  routerConfig: router.routerConfig,
+));
 ```
 
 ---
 
-## 导航
+## 2. 🧭 导航系统 (Navigation)
 
-使用生成的路由类进行导航。这是 100% 类型安全的。
+TpRouter 提供了两种超好用的导航姿势：**Context 自动挡** 和 **Key 也就手动挡**。
+
+### Context 自动挡 (推荐新手) 🚗
+最简单的方式，它会自动向上查找最近的导航器。
 
 ```dart
-// 推送新路由 (Push)
-UserPage(id: 42).tp(context);
+// 跳转新页面
+UserRoute(id: 42).tp(context);
 
-// 替换当前路由 (Replace)
-LoginPage().tp(context, replacement: true);
+// 替换当前页面
+LoginRoute().tp(context, replacement: true);
 
-// 清除历史并进入新路由 (Clear history / Go)
-HomePage().tp(context, clearHistory: true);
+// 清空历史跳转（比如登录后）
+HomeRoute().tp(context, clearHistory: true);
 
-// 等待返回值 (Wait for result)
-final result = await SelectProfileRoute().tp<String>(context);
+// 返回
+context.tpRouter.pop();
 ```
 
-你也可以弹出路由：
+### Key 手动挡 (高手必备) 🏎️
+使用 **TpNavKey**，在任何地方（哪怕是 ViewModel 里）都能精准控制导航，类型安全，重构也不怕！
+
+1. **定义一个 Key**：
 ```dart
-context.tpRouter.pop('Some Result');
+class MainNavKey extends TpNavKey {
+  const MainNavKey() : super('main');
+}
+```
+
+2. **用 Key 搞事情**：
+```dart
+// 在 'main' 这个导航栈里跳转
+MainNavKey().tp(UserRoute(id: 42));
+
+// 从 'main' 导航栈弹出
+MainNavKey().pop();
+
+// 甚至可以检查能不能返回
+bool safe = MainNavKey().canPop;
+
+// 高级返回：直到找到这页为止
+MainNavKey().popUntil((route, data) => data?.routeName == UserRoute.kName);
 ```
 
 ---
 
-## 功能详解
+## 3. 🐚 嵌套路由 & Shell (Shell Navigation)
 
-### 参数提取策略
-TpRouter 会按照以下顺序智能解析构造函数参数：
-1.  **显式注解**：`@Path('id')` (强制从 Path 获取) 或 `@Query('q')` (强制从 Query 获取)。
-2.  **额外数据 (Extra)**：检查对象是否通过 `extra` 传递。
-3.  **路径参数 (Path Params)**：检查 URL 路径中是否包含该 key。
-4.  **查询参数 (Query Params)**：检查 URL 查询字符串。
+搞定 BottomNavigationBar 这种复杂的嵌套 UI，用 **Shell Routes** 简直太轻松了！
 
-### 重定向 / 守卫 (Guards)
-
-TpRouter 支持强大且类型安全的重定向与生命周期系统。
-你可以定义一个重定向类，它接收**完全实例化好的路由对象**进行逻辑处理。
-
-**1. 定义重定向逻辑**
-通过继承 `TpRedirect<T>` 类来更清晰地组织代码。
-```dart
-class AuthRedirect extends TpRedirect<ProtectedRoute> {
-  const AuthRedirect();
-  @override
-  FutureOr<TpRouteData?> handle(BuildContext context, ProtectedRoute route) {
-    if (!AuthService.isLoggedIn) {
-      return const LoginRoute();
-    }
-    return null;
-  }
-}
-```
-
-**2. 绑定到路由**
-将重定向类的 **Type** 提供给注解。
-```dart
-@TpRoute(path: '/protected', redirect: AuthRedirect)
-class ProtectedPage extends StatelessWidget { ... }
-```
-
-### 路由生命周期 (onExit)
-
-同样地，你可以通过实现 `TpOnExit<T>` 来处理路由退出逻辑（如离开前的二次确认）。
+### 定义外壳 (Shell)
+把壳子和 `Key` 绑定起来。
 
 ```dart
-class ConfirmExit extends TpOnExit<FormRoute> {
-  const ConfirmExit();
-  @override
-  FutureOr<bool> onExit(BuildContext context, FormRoute route) async {
-    return await showConfirmDialog(context);
-  }
-}
-
-@TpRoute(path: '/form', onExit: ConfirmExit)
-class FormPage extends StatelessWidget { ... }
-```
-
-### 进阶：对象重构 (fromData)
-
-每个生成的路由类都包含一个静态的 `fromData` 方法，它能从通用的 `TpRouteData`（例如来自深层链接或原始路径）重构出强类型的路由实例。
-
-```dart
-// 从通用数据对象重构
-final data = TpRouteData.fromPath('/user/123');
-final userRoute = UserRoute.fromData(data);
-print(userRoute.id); // 123
-```
-
-### 自定义页面构建 (Custom Page)
-
-`tp_router` 允许你完全自定义 `Page` 对象的构建过程。当你需要使用 `MaterialPage`、`CupertinoPage` 或者自定义构建逻辑（如底部分页等）时非常有用。
-
-**1. 实现 `TpPageFactory`**
-```dart
-class MyMaterialPageFactory extends TpPageFactory {
-  const MyMaterialPageFactory();
-
-  @override
-  Page<dynamic> buildPage(BuildContext context, TpRouteData data, Widget child) {
-    return MaterialPage(
-      key: data.pageKey,
-      child: child,
-      name: data.routeName,
-      arguments: data.extra,
-    );
-  }
-}
-```
-
-**2. 通过注解应用**
-在 `@TpRoute` 或 `@TpShellRoute` 中指定工厂类。
-
-```dart
-@TpRoute(path: '/details', pageBuilder: MyMaterialPageFactory)
-class DetailsPage extends StatelessWidget { ... }
-```
-
-**3. 全局配置**
-你也可以在 `TpRouter` 构造函数中为所有路由设置默认的页面构建器：
-
-```dart
-final router = TpRouter(
-  routes: tpRoutes,
-  defaultPageBuilder: const MyMaterialPageFactory(),
-);
-```
-
-
-### Shell 路由 (嵌套导航)
-
-TpRouter 提供了一种强大且解耦的方式来定义 Shell 路由，通过使用 **Key**。不需要手动列出子路由，只需给 Shell 分配一个 `navigatorKey`，并使用 `parentNavigatorKey` 关联子路由。
-
-这种方法让代码更整洁、模块化，非常适合复杂的应用！
-
-#### 1. 定义 Shell 路由
-为你的 Shell 布局分配一个唯一的 `navigatorKey`。
-
-```dart
-// 有状态 Shell (例如: 底部导航栏)
 @TpShellRoute(
-  navigatorKey: 'main', 
-  isIndexedStack: true, // 保持每个分支的状态
+  navigatorKey: MainNavKey, // 上面定义的那个 Key
+  isIndexedStack: true,     // 保持 Tab 状态必备！
 )
 class MainShellPage extends StatelessWidget {
   final TpStatefulNavigationShell navigationShell;
-  
-  const MainShellPage({required this.navigationShell, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: navigationShell.currentIndex,
-        // 切换分支的辅助方法
-        onTap: (index) => navigationShell.goBranch(index),
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '首页'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '设置'),
-        ],
-      ),
-    );
-  }
+  // ... 这里写 BottomNavigationBar，用 navigationShell 控制切换
 }
 ```
 
-#### 2. 关联子路由
-只需在属于 Shell 的路由中添加 `parentNavigatorKey`。
-对于有状态 Shell (Tabs)，使用 `branchIndex` 将路由分配到特定的 Tab。
+### 往壳子里装页面
+只需要指定 `parentNavigatorKey`，它就自动进去了！
 
 ```dart
-// 分支 0: 首页
-@TpRoute(path: '/', parentNavigatorKey: 'main', branchIndex: 0)
+// 首页，放在第 0 个 Tab
+@TpRoute(path: '/home', parentNavigatorKey: MainNavKey, branchIndex: 0)
 class HomePage extends StatelessWidget { ... }
 
-// 分支 1: 设置
-@TpRoute(path: '/settings', parentNavigatorKey: 'main', branchIndex: 1)
+// 设置页，放在第 1 个 Tab
+@TpRoute(path: '/settings', parentNavigatorKey: MainNavKey, branchIndex: 1)
 class SettingsPage extends StatelessWidget { ... }
 ```
 
-#### 3. 嵌套 Shell (进阶)
-你甚至可以在一个 Shell 中嵌套另一个 Shell！只需将内部 Shell 视为外部 Shell 的子路由。
+---
+
+## 4. 🔥 进阶大招
+
+### 路由管理 (Route Management)
+强势移除页面！
 
 ```dart
-// 位于 'main' Shell 第 3 个分支中的 Shell
-@TpShellRoute(
-  navigatorKey: 'dashboard',   // 该 Shell 自己的 Key
-  parentNavigatorKey: 'main',  // 父级 Shell 的 Key
-  branchIndex: 2,              // 放置在 'main' 的第 2 个分支中
-)
-class DashboardShell extends StatelessWidget { ... }
+// 移除某个特定的路由实例
+context.tpRouter.removeRoute(myRouteData);
 
-// 嵌套 'dashboard' Shell 的子路由
-@TpRoute(path: '/dashboard/stats', parentNavigatorKey: 'dashboard')
-class StatsPage extends StatelessWidget { ... }
+// 批量移除（比如关掉所有弹窗）
+context.tpRouter.removeWhere((data) => data.fullPath.contains('/dialog'));
 ```
 
-#### 4. 配置页面与观察者
-你可以为 Shell 路由自定义页面行为、观察者以及 Key 配置。
-
-> **注意**：Shell 路由本身不带有动画，因为它只是一个 UI 容器。动画应由其显示的子路由来决定。
+### 路由守卫 (Guards)
+类型安全的拦截器，未登录不让进！🛑
 
 ```dart
-@TpShellRoute(
-  navigatorKey: 'modal_shell',
-  // 使 Shell 透明（例如用于弹窗）
-  opaque: false,
-  // 添加观察者
-  observers: [MyObserver],
-)
-class ModalShellPage extends StatelessWidget { ... }
+class AuthGuard extends TpRedirect<ProtectedRoute> {
+  @override
+  FutureOr<TpRouteData?> handle(BuildContext context, ProtectedRoute route) {
+    if (!loggedIn) return const LoginRoute(); // 去登录
+    return null; // 放行
+  }
+}
+
+@TpRoute(path: '/protected', redirect: AuthGuard)
+class ProtectedPage extends StatelessWidget { ... }
+```
+
+### 退出拦截 (onExit)
+用户要滑走？挽留一下！🙏
+
+```dart
+class UnsavedChangesGuard extends TpOnExit<EditorRoute> {
+  @override
+  FutureOr<bool> onExit(BuildContext context, EditorRoute route) async {
+    return await showDialog(...) ?? false; // 弹窗确认
+  }
+}
+
+@TpRoute(path: '/edit', onExit: UnsavedChangesGuard)
+class EditorPage extends StatelessWidget { ... }
 ```
 
 ---
 
-### 高质量体验：滑动返回 (Swipe Back)
+## ⚙️ 配置 (Configuration)
 
-TpRouter 提供了一个高质量的滑动返回手势 (`TpPageType.swipeBack`)，支持 iOS 和 Android。
-
-*   **全屏触发**：默认支持从屏幕任意位置右滑返回（可配置）。
-*   **原生触感**：包含平滑的动画和阴影效果，完美模拟原生 iOS 体验。
-*   **冲突解决**：能智能识别当前页面是否有横向滚动组件（如列表或 PageView），避免手势冲突。
-
-
----
-
-### 高级路由管理 (智能移除)
-
-由于 `go_router` 的声明式和基于 URL 的架构，命令式移除路由（例如：从堆栈中间移除一个页面）通常受到严格限制。
-
-TpRouter 通过智能的 **Pending Pop (延迟弹出)** 策略克服了这一限制：
-
-1.  **顶部路由**：如果路由位于栈顶，它会被立即弹出 (Pop)。
-2.  **后台路由**：它会被内部标记为“待移除”。为了不破坏 URL 的一致性，TpRouter 不会强行修改 `go_router` 堆栈，而是选择等待。
-3.  **自动跳过**：当用户最终回退导航，且被标记的路由重新显示时，TpRouter 会**自动且立即地弹出它**。
-
-这种机制在严格遵守 `go_router` 约束的同时，为用户创造了无缝的“删除”体验。
-
-**示例：**
-
-```dart
-// 1. 移除特定的路由实例
-// (根据路由名称和参数匹配)
-context.tpRouter.removeRoute(LoginRoute());
-
-// 2. 根据逻辑移除 (状态清理)
-// 示例：移除所有与已删除订单相关的屏幕
-final deletedCount = context.tpRouter.removeWhere((data) {
-  return data.pathParams['orderId'] == '12345';
-});
-
-// 3. 移除所有弹窗或特定模式
-context.tpRouter.removeWhere((data) {
-  return data.fullPath.contains('/dialog/');
-});
-```
-
-此功能与 `TpRouteObserver` 完全集成，确保存源清理和状态一致性。
-
----
-
-## 配置
-
-### 自定义输出路径
-
-默认情况下，代码生成于 `lib/tp_router.gr.dart`。你可以在 `build.yaml` 中自定义此路径：
+想改生成文件的路径？在 `build.yaml` 里安排：
 
 ```yaml
 targets:
   $default:
     builders:
-      tp_router_generator:tp_router:
+      tp_router_generator:
         options:
-          output: lib/routes/app_routes.dart
+          output: lib/routes.gr.dart # 比如改到这里
 ```
+
+## 📚 迁移指南
+从 GoRouter 或 AutoRouter 迁移过来？看这里 [MIGRATION.md](MIGRATION.md)。
 
 ---
 
-## 迁移指南
-
-正在考虑从 `go_router` 或 `auto_router` 切换？查看我们的[迁移指南](https://github.com/lwj1994/tp_router/blob/main/tp_router/MIGRATION_zh.md)。
-
-## 许可证
+家人们，这么好用的轮子，还不赶紧 star 起来？🌟

@@ -67,7 +67,9 @@ class DetailsPage extends StatelessWidget {
                 if (level > 1)
                   ElevatedButton.icon(
                     onPressed: () {
-                      context.tpRouter.popUntil((route) => route.isFirst);
+                      context.tpRouter.popUntil((route, data) {
+                        return route.settings.name == '/';
+                      });
                     },
                     icon: const Icon(Icons.home),
                     label: const Text('Pop Until Root'),

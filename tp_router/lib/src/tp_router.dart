@@ -336,12 +336,41 @@ class TpRouter {
           .fullPath;
 
   /// Pop routes until the predicate is satisfied.
+  ///
+  /// The [predicate] callback is called for each route on the stack (from top to bottom).
+  /// [data] will be provided if the route is a Tp-managed route, otherwise it will be null.
   void popUntil(
-    bool Function(Route<dynamic>) predicate, {
+    bool Function(Route<dynamic> route, TpRouteData? data) predicate, {
     BuildContext? context,
+    TpNavKey? navigatorKey,
   }) {
-    final nav = _getNavigator(context: context);
-    nav.popUntil(predicate);
+    final nav = _getNavigator(context: context, navigatorKey: navigatorKey);
+    final observer = _findObserverInNavigator(nav);
+    nav.popUntil((route) {
+      final data = observer?.getRouteData(route);
+      return predicate(route, data);
+    });
+  }
+
+  /// Pop until the first route in the stack.
+  void popToInitial({
+    BuildContext? context,
+    TpNavKey? navigatorKey,
+  }) {
+    popUntil((route, _) => route.isFirst,
+        context: context, navigatorKey: navigatorKey);
+  }
+
+  /// Pop until the specified route is found.
+  ///
+  /// Matches by [TpRouteData.routeName] and [TpRouteData.fullPath].
+  void popTo(
+    TpRouteData route, {
+    BuildContext? context,
+    TpNavKey? navigatorKey,
+  }) {
+    popUntil((r, data) => data == route,
+        context: context, navigatorKey: navigatorKey);
   }
 
   /// Remove a route from the navigation stack.
@@ -512,8 +541,19 @@ class TpRouterContext {
   }
 
   /// Pop routes until the predicate is satisfied.
-  void popUntil(bool Function(Route<dynamic>) predicate) {
+  void popUntil(
+      bool Function(Route<dynamic> route, TpRouteData? data) predicate) {
     TpRouter.instance.popUntil(predicate, context: _context);
+  }
+
+  /// Pop until the first route in the stack.
+  void popToInitial() {
+    TpRouter.instance.popToInitial(context: _context);
+  }
+
+  /// Pop until the specified route is found.
+  void popTo(TpRouteData route) {
+    TpRouter.instance.popTo(route, context: _context);
   }
 
   /// Check if can pop the current route.
