@@ -177,7 +177,7 @@ abstract class TpNavKey {
   /// Get the current location in this navigator.
   ///
   /// This is a shortcut for [TpRouter.location] with `navigatorKey: this`.
-  String get currentFullPath => TpRouter.instance.location(navigatorKey: this);
+  TpRouteData get location => TpRouter.instance.location(navigatorKey: this);
 }
 
 /// Private implementation for factory constructor.

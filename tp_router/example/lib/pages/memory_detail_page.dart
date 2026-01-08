@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/location_display.dart';
 import 'package:tp_router/tp_router.dart';
 import '../models/memory_detail.dart';
 
@@ -16,10 +17,12 @@ class MemoryDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Memory Detail')),
-      body: Center(
-        child: Text('Memory: $memory'),
+    return LocationDisplay(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Memory Detail')),
+        body: Center(
+          child: Text('Memory: $memory'),
+        ),
       ),
     );
   }

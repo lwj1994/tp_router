@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/location_display.dart';
 import 'package:tp_router/tp_router.dart';
 
 /// User page demonstrating parameter extraction.
@@ -37,31 +38,34 @@ class UserPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('User Details'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.tpRouter.pop(),
+    return LocationDisplay(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('User Details'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.tpRouter.pop(),
+          ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('ID: $id', style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            Text('Name: $name', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text('Age: $age', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 24),
-            const Text(
-              'These parameters were automatically extracted and '
-              'type-converted from the URL!',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('ID: $id', style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
+              Text('Name: $name',
+                  style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 8),
+              Text('Age: $age', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 24),
+              const Text(
+                'These parameters were automatically extracted and '
+                'type-converted from the URL!',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/location_display.dart';
 import 'package:tp_router/tp_router.dart';
 import '../guards/auth_guard.dart';
 
@@ -8,9 +9,11 @@ class ProtectedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Protected Page')),
-      body: const Center(child: Text('You are logged in!')),
+    return LocationDisplay(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Protected Page')),
+        body: const Center(child: Text('You are logged in!')),
+      ),
     );
   }
 }

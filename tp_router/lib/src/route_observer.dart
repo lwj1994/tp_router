@@ -82,18 +82,24 @@ class TpRouteObserver extends NavigatorObserver {
   }
 
   @override
+  @override
   void didReplace({Route? newRoute, Route? oldRoute}) {
+    int index = -1;
     if (oldRoute != null && _shouldTrackRoute(oldRoute)) {
-      final index = _allRoutes.indexOf(oldRoute);
-      if (index != -1 && newRoute != null && _shouldTrackRoute(newRoute)) {
-        _allRoutes[index] = newRoute;
+      index = _allRoutes.indexOf(oldRoute);
+      if (index != -1) {
+        _allRoutes.removeAt(index);
       }
       _removeRouteFromMap(oldRoute);
       _routeDataMap.remove(oldRoute);
-      _pendingRemovals
-          .remove(oldRoute); // Cleanup pending status for replaced route
+      _pendingRemovals.remove(oldRoute);
     }
     if (newRoute != null && _shouldTrackRoute(newRoute)) {
+      if (index != -1) {
+        _allRoutes.insert(index, newRoute);
+      } else {
+        _allRoutes.add(newRoute);
+      }
       _addRouteToMap(newRoute);
       _tryExtractRouteData(newRoute);
     }
@@ -134,7 +140,16 @@ class TpRouteObserver extends NavigatorObserver {
   }
 
   /// Get all route data entries
-  Map<Route, TpRouteData> get allRouteData => Map.unmodifiable(_routeDataMap);
+  /// Get all route data entries, ordered by stack position (bottom to top).
+  Map<Route, TpRouteData> get allRouteData {
+    final sortedMap = <Route, TpRouteData>{};
+    for (final route in _allRoutes) {
+      if (_routeDataMap.containsKey(route)) {
+        sortedMap[route] = _routeDataMap[route]!;
+      }
+    }
+    return Map.unmodifiable(sortedMap);
+  }
 
   void _addRouteToMap(Route route) {
     final name = route.settings.name;

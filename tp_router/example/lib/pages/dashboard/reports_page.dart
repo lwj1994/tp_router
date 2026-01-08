@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/location_display.dart';
 import 'package:tp_router/tp_router.dart';
 import 'package:example/routes/nav_keys.dart';
 
@@ -8,35 +9,38 @@ class ReportsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: () => context.tpRouter.pop(),
-              child: const Text('Back to Overview'),
+    return LocationDisplay(
+      navigatorKey: DashboardNavKey(),
+      child: Scaffold(
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                onPressed: () => context.tpRouter.pop(),
+                child: const Text('Back to Overview'),
+              ),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: 20,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: const Icon(Icons.file_copy),
-                  title: Text('Report #${index + 1}'),
-                  subtitle: Text(
-                      'Generated on ${DateTime.now().toString().split(' ')[0]}'),
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Opening Report #${index + 1}')),
-                    );
-                  },
-                );
-              },
+            Expanded(
+              child: ListView.builder(
+                itemCount: 20,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    leading: const Icon(Icons.file_copy),
+                    title: Text('Report #${index + 1}'),
+                    subtitle: Text(
+                        'Generated on ${DateTime.now().toString().split(' ')[0]}'),
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Opening Report #${index + 1}')),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

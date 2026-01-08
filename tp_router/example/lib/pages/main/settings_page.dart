@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/location_display.dart';
 import 'package:tp_router/tp_router.dart';
 import 'package:example/routes/nav_keys.dart';
 
@@ -13,16 +14,13 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return LocationDisplay(
+        child: Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
       ),
       body: ListView(
         children: [
-          ListTile(
-            title: const Text('Current Location'),
-            subtitle: Text(context.tpRouter.currentFullPath),
-          ),
           const ListTile(
             title: Text('Theme'),
             trailing: Icon(Icons.chevron_right),
@@ -33,6 +31,6 @@ class SettingsPage extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }

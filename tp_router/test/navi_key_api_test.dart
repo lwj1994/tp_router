@@ -84,7 +84,7 @@ void main() {
       expect(const TestNavKey().canPop, isTrue);
 
       // 4. Test currentFullPath
-      print('Current path: ${const TestNavKey().currentFullPath}');
+      print('Current path: ${const TestNavKey().location.fullPath}');
       // expect(const TestNavKey().currentFullPath, '/page2');
 
       // Test popTo
@@ -103,7 +103,7 @@ void main() {
       const TestNavKey().popTo(SimpleRoute('/home', name: 'home'));
       await tester.pumpAndSettle();
       expect(find.text('Home'), findsOneWidget);
-      expect(const TestNavKey().currentFullPath, '/home');
+      expect(const TestNavKey().location.fullPath, '/home');
 
       // Test popToInitial
       const TestNavKey().tp(SimpleRoute('/page2', name: 'page2'));
@@ -114,7 +114,7 @@ void main() {
       const TestNavKey().popToInitial();
       await tester.pumpAndSettle();
       expect(find.text('Home'), findsOneWidget);
-      expect(const TestNavKey().currentFullPath, '/home');
+      expect(const TestNavKey().location.fullPath, '/home');
 
       // 5. Test popUntil
       const TestNavKey().tp(SimpleRoute('/page2', name: 'page2'));

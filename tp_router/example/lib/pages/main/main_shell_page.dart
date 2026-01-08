@@ -3,9 +3,7 @@ import 'package:tp_router/tp_router.dart';
 import 'package:example/routes/nav_keys.dart';
 
 @TpShellRoute(
-    navigatorKey: MainNavKey,
-    isIndexedStack: true,
-    observers: [AObserver])
+    navigatorKey: MainNavKey, isIndexedStack: true, observers: [AObserver])
 class MainShellPage extends StatelessWidget {
   final TpStatefulNavigationShell navigationShell;
 
@@ -53,4 +51,10 @@ class MainShellPage extends StatelessWidget {
   }
 }
 
-class AObserver extends NavigatorObserver {}
+class AObserver extends NavigatorObserver {
+  @override
+  void didPush(Route route, Route? previousRoute) {
+    super.didPush(route, previousRoute);
+    print("AObserver${route.settings.name ?? ""}");
+  }
+}

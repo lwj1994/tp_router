@@ -277,8 +277,7 @@ class TpRouter {
       'targeting a specific navigator.',
     );
     // Determine which GoRouter instance to use
-    final targetRouter =
-        _getTargetRouter(context: context, navigatorKey: navigatorKey);
+    final targetRouter = _goRouter;
 
     if (isClearHistory) {
       targetRouter.go(route.fullPath, extra: route.extra);
@@ -291,49 +290,35 @@ class TpRouter {
     }
   }
 
-  /// Helper to resolve the target GoRouter based on context or navigatorKey.
-  GoRouter _getTargetRouter({BuildContext? context, TpNavKey? navigatorKey}) {
-    assert(
-      !(context != null && navigatorKey != null),
-      'Cannot pass both context and navigatorKey. '
-      'Use context for context-aware navigation, or navigatorKey for '
-      'targeting a specific navigator.',
-    );
-    if (context != null) {
-      try {
-        return GoRouter.of(context);
-      } catch (_) {}
-    } else if (navigatorKey != null) {
-      final key = navigatorKey.globalKey;
-      final ctx = key.currentContext;
-      if (ctx != null) {
-        try {
-          return GoRouter.of(ctx);
-        } catch (_) {}
-      }
-    }
-    return _goRouter;
-  }
-
   /// Pop the current route from the navigation stack.
   void pop<T extends Object?>({
     BuildContext? context,
     TpNavKey? navigatorKey,
     T? result,
   }) {
-    _getTargetRouter(context: context, navigatorKey: navigatorKey).pop(result);
+    final nav = _getNavigator(context: context, navigatorKey: navigatorKey);
+    if (nav.canPop()) {
+      nav.pop(result);
+    }
   }
 
   /// Check if can pop the current route.
   bool canPop({BuildContext? context, TpNavKey? navigatorKey}) =>
-      _getTargetRouter(context: context, navigatorKey: navigatorKey).canPop();
+      _getNavigator(context: context, navigatorKey: navigatorKey).canPop();
 
   /// Get the current location.
-  String location({BuildContext? context, TpNavKey? navigatorKey}) =>
-      _getTargetRouter(context: context, navigatorKey: navigatorKey)
-          .routerDelegate
-          .currentConfiguration
-          .fullPath;
+  TpRouteData location({BuildContext? context, TpNavKey? navigatorKey}) {
+    if (context == null && navigatorKey == null) {
+      final fullPath = _goRouter.routerDelegate.currentConfiguration.fullPath;
+      return TpRouteData.fromPath(fullPath,
+          extra: _goRouter.routerDelegate.currentConfiguration.extra);
+    }
+    final observer = getObserver(context: context, navigatorKey: navigatorKey);
+    if (observer != null && observer.allRouteData.isNotEmpty) {
+      return observer.allRouteData.values.last;
+    }
+    return TpRouteData.fromPath('/');
+  }
 
   /// Pop routes until the predicate is satisfied.
   ///
@@ -395,12 +380,10 @@ class TpRouter {
     BuildContext? context,
     TpNavKey? navigatorKey,
   }) {
-    final navigator = _getNavigator(
+    final observer = _findObserverInNavigator(_getNavigator(
       context: context,
       navigatorKey: navigatorKey,
-    );
-
-    final observer = _findObserverInNavigator(navigator);
+    ));
     if (observer == null) return 0;
 
     final routesToRemove = <Route>[];
@@ -414,7 +397,7 @@ class TpRouter {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       for (final route in routesToRemove) {
         if (route.isCurrent) {
-          navigator.pop();
+          pop();
         } else {
           observer.markRouteForRemoval(route);
         }
@@ -429,11 +412,10 @@ class TpRouter {
     BuildContext? context,
     TpNavKey? navigatorKey,
   }) {
-    final navigator = _getNavigator(
+    return _findObserverInNavigator(_getNavigator(
       context: context,
       navigatorKey: navigatorKey,
-    );
-    return _findObserverInNavigator(navigator);
+    ));
   }
 
   /// Internal helper to get NavigatorState.
@@ -560,17 +542,13 @@ class TpRouterContext {
   bool get canPop => TpRouter.instance.canPop(context: _context);
 
   /// Get the current location.
-  String get currentFullPath => TpRouter.instance.location(context: _context);
+  TpRouteData get location => TpRouter.instance.location(context: _context);
 
   /// Remove a route from the navigation stack.
-  bool removeRoute(
-    TpRouteData route, {
-    TpNavKey? navigatorKey,
-  }) {
+  bool removeRoute(TpRouteData route) {
     return TpRouter.instance.removeRoute(
       route,
       context: _context,
-      navigatorKey: navigatorKey,
     );
   }
 

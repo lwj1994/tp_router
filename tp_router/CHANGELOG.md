@@ -1,3 +1,11 @@
+## 0.4.1
+
+*   **Fix**: Improved `didReplace` logic in `TpRouteObserver` to correctly handle route replacements and maintain proper synchronization with the internal route list.
+*   **Fix**: `allRouteData` getter now returns a `Map<Route, TpRouteData>` sorted by the route's position in the navigation stack (bottom to top).
+*   **Fix**: Simplified `pop` and `canPop` methods to directly use `Navigator` state.
+*   **Fix**: Refactored `removeRoute` to handle edge cases when the route to be removed is the current route.
+*   **API**: The `location` getter now returns a `TpRouteData` object instead of a raw `String` path, providing structured route information via `fullPath`.
+
 ## 0.4.0
 
 *   **Type-Safe NavKeys**: Introduced `TpNavKey` class for strong-typed navigator keys. Deprecated usage of raw Strings for navigator keys in favor of `TpNavKey` subclasses.

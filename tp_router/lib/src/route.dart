@@ -73,8 +73,7 @@ abstract class TpRouteData {
   /// context.tpRouter.tp(TpRouteData.fromPath('/user/123'));
   /// context.tpRouter.tp(TpRouteData.fromPath('/home', extra: {'key': 'value'}));
   /// ```
-  factory TpRouteData.fromPath(String path,
-      {Map<String, dynamic> extra = const {}}) {
+  factory TpRouteData.fromPath(String path, {Object? extra = const {}}) {
     return _PathRoute(path, extra: extra);
   }
 
@@ -242,13 +241,12 @@ class _PathRoute extends TpRouteData {
   @override
   final String fullPath;
 
-  final Map<String, dynamic> _extra;
+  final Object? _extra;
 
   @override
-  Map<String, dynamic> get extra => _extra;
+  Object? get extra => _extra;
 
-  const _PathRoute(this.fullPath, {Map<String, dynamic> extra = const {}})
-      : _extra = extra;
+  const _PathRoute(this.fullPath, {Object? extra = const {}}) : _extra = extra;
 
   @override
   String? get routeName => null;
