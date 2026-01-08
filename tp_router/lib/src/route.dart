@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tp_router/src/tp_router.dart';
 import 'package:tp_router_annotation/tp_router_annotation.dart';
+import 'page_factory.dart';
 
 /// Configuration for TpRouter options.
 class TpRouterConfig {
@@ -13,7 +14,12 @@ class TpRouterConfig {
     this.defaultTransition,
     this.defaultTransitionDuration,
     this.defaultReverseTransitionDuration,
+    this.defaultPageType,
+    this.defaultPageBuilder,
   });
+
+  final TpPageType? defaultPageType;
+  final TpPageFactory? defaultPageBuilder;
 }
 
 /// Base class for all route objects used in navigation.
@@ -33,12 +39,6 @@ class TpRouterConfig {
 /// final userId = data.getInt('id');
 /// ```
 abstract class TpRouteData {
-  /// The route name used for identification in TpRouteObserver.
-  ///
-  /// This is automatically set to the name from @TpRoute annotation
-  /// with 'tp_router_' prefix.
-  String get routeName;
-
   /// The full path of the route including query parameters.
   String get fullPath;
 
@@ -56,6 +56,12 @@ abstract class TpRouteData {
 
   /// Error associated with this route, if any.
   Object? get error => null;
+
+  /// The page key used by GoRouter (useful for maintaining state).
+  LocalKey? get pageKey => null;
+
+  /// The name of the route (null if not named).
+  String? get routeName;
 
   const TpRouteData();
 
@@ -202,9 +208,6 @@ class _PathRoute extends TpRouteData {
   @override
   final String fullPath;
 
-  @override
-  String get routeName => fullPath; // Use path as name for path-based routes
-
   final Map<String, dynamic> _extra;
 
   @override
@@ -212,6 +215,12 @@ class _PathRoute extends TpRouteData {
 
   const _PathRoute(this.fullPath, {Map<String, dynamic> extra = const {}})
       : _extra = extra;
+
+  @override
+  String? get routeName => null;
+
+  @override
+  LocalKey? get pageKey => null;
 }
 
 /// Internal implementation for current route data from context.
@@ -220,13 +229,16 @@ class _ContextRouteData extends TpRouteData {
   final String fullPath;
 
   @override
-  String get routeName => fullPath;
+  final String? routeName;
 
   @override
   final Map<String, String> pathParams;
 
   @override
   final Map<String, String> queryParams;
+
+  @override
+  final LocalKey? pageKey;
 
   final Map<String, dynamic> _extra;
 
@@ -235,8 +247,10 @@ class _ContextRouteData extends TpRouteData {
 
   const _ContextRouteData({
     required this.fullPath,
+    required this.routeName,
     required this.pathParams,
     required this.queryParams,
+    this.pageKey,
     required Map<String, dynamic> extra,
   }) : _extra = extra;
 }
@@ -256,8 +270,10 @@ extension TpRouteDataExtension on BuildContext {
     final extraData = state.extra;
     return _ContextRouteData(
       fullPath: state.uri.toString(),
+      routeName: state.name ?? state.uri.toString(),
       pathParams: state.pathParameters,
       queryParams: state.uri.queryParameters,
+      pageKey: state.pageKey,
       extra: extraData is Map<String, dynamic> ? extraData : const {},
     );
   }

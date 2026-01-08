@@ -17,6 +17,24 @@ import 'package:flutter/widgets.dart';
 /// @TpRoute(path: '/details', transitionsBuilder: TpFadeTransition())
 /// class DetailsPage extends StatelessWidget { ... }
 /// ```
+/// Defines the type of page to use for a route.
+enum TpPageType {
+  /// Automatically choose based on platform and transition settings.
+  auto,
+
+  /// Force use of MaterialPage.
+  material,
+
+  /// Force use of CupertinoPage.
+  cupertino,
+
+  /// Use SwipeBackWrapper (Left edge swipe to close).
+  swipeBack,
+
+  /// Use a custom page builder (implied if `pageBuilder` is set).
+  custom,
+}
+
 class TpRoute {
   /// The URL path for this route.
   ///
@@ -51,16 +69,14 @@ class TpRoute {
   /// Reverse transition duration. Defaults to 300ms.
   final Duration reverseTransitionDuration;
 
-  /// A top-level function or static method to handle redirection.
-  ///
-  /// Signature: `FutureOr<TpRouteData?> redirect(BuildContext context, TpRouteData state)`
+  /// A class implementing `TpRedirect` (from tp_router package) to handle redirection.
   ///
   /// Example:
   /// ```dart
-  /// @TpRoute(path: '/protected', redirect: authRedirect)
+  /// @TpRoute(path: '/protected', redirect: AuthRedirect)
   /// class ProtectedPage extends StatelessWidget { ... }
   /// ```
-  final dynamic redirect;
+  final Type? redirect;
 
   /// Optional key of the parent shell.
   ///
@@ -84,9 +100,8 @@ class TpRoute {
 
   /// Handle logic when route is exiting.
   ///
-  /// Must be a top-level function or static method:
-  /// `FutureOr<bool> Function(BuildContext, GoRouterState)`
-  final Function? onExit;
+  /// Must be a implementation of `TpOnExit` (from tp_router package).
+  final Type? onExit;
 
   /// Whether this page is a fullscreen dialog (iOS modal style).
   final bool fullscreenDialog;
@@ -109,11 +124,21 @@ class TpRoute {
   /// Whether to maintain state when the route is inactive.
   final bool maintainState;
 
+  /// The specific type of page to construct.
+  final TpPageType? type;
+
+  /// Custom PageBuilder class type.
+  ///
+  /// If provided, this factory will be used to build the [Page], overriding
+  /// any [transition] or default page settings.
+  final Type? pageBuilder;
+
   /// Creates a [TpRoute] annotation.
   const TpRoute({
     this.path,
     this.isInitial = false,
     this.redirect,
+    this.type,
     this.transition,
     this.transitionDuration = const Duration(milliseconds: 300),
     this.reverseTransitionDuration = const Duration(milliseconds: 300),
@@ -126,6 +151,7 @@ class TpRoute {
     this.barrierColor,
     this.barrierLabel,
     this.maintainState = true,
+    this.pageBuilder,
   });
 }
 
@@ -231,6 +257,9 @@ abstract class TpTransitionsBuilder {
 /// class SettingsPage extends StatelessWidget { ... }
 /// ```
 class TpShellRoute {
+  /// The specific type of page to construct.
+  final TpPageType? type;
+
   /// The key to identify this shell route.
   ///
   /// Child routes with matching `parentNavigatorKey` in their `@TpRoute` annotation
@@ -287,14 +316,11 @@ class TpShellRoute {
   /// Whether to maintain state when the route is inactive.
   final bool maintainState;
 
-  /// Custom transition builder for this route.
-  final TpTransitionsBuilder? transition;
-
-  /// Transition duration. Defaults to 300ms.
-  final Duration transitionDuration;
-
-  /// Reverse transition duration. Defaults to 300ms.
-  final Duration reverseTransitionDuration;
+  /// Custom PageBuilder class type.
+  ///
+  /// If provided, this factory will be used to build the [Page], overriding
+  /// any [transition] or default page settings.
+  final Type? pageBuilder;
 
   /// Creates a [TpShellRoute] annotation.
   const TpShellRoute({
@@ -309,9 +335,8 @@ class TpShellRoute {
     this.barrierColor,
     this.barrierLabel,
     this.maintainState = true,
-    this.transition,
-    this.transitionDuration = Duration.zero,
-    this.reverseTransitionDuration = Duration.zero,
+    this.type,
+    this.pageBuilder,
   });
 }
 

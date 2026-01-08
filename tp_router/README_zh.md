@@ -138,29 +138,11 @@ TpRouter 会按照以下顺序智能解析构造函数参数：
 
 ### 重定向 / 守卫 (Guards)
 
-TpRouter 支持强大且类型安全的重定向系统。
-你可以定义一个重定向函数或类，通过它接收**完全实例化好的路由对象**。
+TpRouter 支持强大且类型安全的重定向与生命周期系统。
+你可以定义一个重定向类，它接收**完全实例化好的路由对象**进行逻辑处理。
 
 **1. 定义重定向逻辑**
-```dart
-// 你可以直接访问 'route.id'！
-FutureOr<TpRouteData?> checkUserAccess(BuildContext context, UserRoute route) {
-  if (route.id == 999) {
-    // 重定向到拦截页
-    return const BlockedRoute();
-  }
-  return null; // 不重定向，继续进入页面
-}
-```
-
-**2. 绑定到路由**
-```dart
-@TpRoute(path: '/user/:id', redirect: checkUserAccess)
-class UserPage extends StatelessWidget { ... }
-```
-
-你也可以通过继承 `TpRedirect<T>` 类来更清晰地组织代码。
-
+通过继承 `TpRedirect<T>` 类来更清晰地组织代码。
 ```dart
 class AuthRedirect extends TpRedirect<ProtectedRoute> {
   const AuthRedirect();
@@ -172,10 +154,82 @@ class AuthRedirect extends TpRedirect<ProtectedRoute> {
     return null;
   }
 }
+```
 
+**2. 绑定到路由**
+将重定向类的 **Type** 提供给注解。
+```dart
 @TpRoute(path: '/protected', redirect: AuthRedirect)
 class ProtectedPage extends StatelessWidget { ... }
 ```
+
+### 路由生命周期 (onExit)
+
+同样地，你可以通过实现 `TpOnExit<T>` 来处理路由退出逻辑（如离开前的二次确认）。
+
+```dart
+class ConfirmExit extends TpOnExit<FormRoute> {
+  const ConfirmExit();
+  @override
+  FutureOr<bool> onExit(BuildContext context, FormRoute route) async {
+    return await showConfirmDialog(context);
+  }
+}
+
+@TpRoute(path: '/form', onExit: ConfirmExit)
+class FormPage extends StatelessWidget { ... }
+```
+
+### 进阶：对象重构 (fromData)
+
+每个生成的路由类都包含一个静态的 `fromData` 方法，它能从通用的 `TpRouteData`（例如来自深层链接或原始路径）重构出强类型的路由实例。
+
+```dart
+// 从通用数据对象重构
+final data = TpRouteData.fromPath('/user/123');
+final userRoute = UserRoute.fromData(data);
+print(userRoute.id); // 123
+```
+
+### 自定义页面构建 (Custom Page)
+
+`tp_router` 允许你完全自定义 `Page` 对象的构建过程。当你需要使用 `MaterialPage`、`CupertinoPage` 或者自定义构建逻辑（如底部分页等）时非常有用。
+
+**1. 实现 `TpPageFactory`**
+```dart
+class MyMaterialPageFactory extends TpPageFactory {
+  const MyMaterialPageFactory();
+
+  @override
+  Page<dynamic> buildPage(BuildContext context, TpRouteData data, Widget child) {
+    return MaterialPage(
+      key: data.pageKey,
+      child: child,
+      name: data.routeName,
+      arguments: data.extra,
+    );
+  }
+}
+```
+
+**2. 通过注解应用**
+在 `@TpRoute` 或 `@TpShellRoute` 中指定工厂类。
+
+```dart
+@TpRoute(path: '/details', pageBuilder: MyMaterialPageFactory)
+class DetailsPage extends StatelessWidget { ... }
+```
+
+**3. 全局配置**
+你也可以在 `TpRouter` 构造函数中为所有路由设置默认的页面构建器：
+
+```dart
+final router = TpRouter(
+  routes: tpRoutes,
+  defaultPageBuilder: const MyMaterialPageFactory(),
+);
+```
+
 
 ### Shell 路由 (嵌套导航)
 
@@ -245,6 +299,33 @@ class DashboardShell extends StatelessWidget { ... }
 @TpRoute(path: '/dashboard/stats', parentNavigatorKey: 'dashboard')
 class StatsPage extends StatelessWidget { ... }
 ```
+
+#### 4. 配置页面与观察者
+你可以为 Shell 路由自定义页面行为、观察者以及 Key 配置。
+
+> **注意**：Shell 路由本身不带有动画，因为它只是一个 UI 容器。动画应由其显示的子路由来决定。
+
+```dart
+@TpShellRoute(
+  navigatorKey: 'modal_shell',
+  // 使 Shell 透明（例如用于弹窗）
+  opaque: false,
+  // 添加观察者
+  observers: [MyObserver],
+)
+class ModalShellPage extends StatelessWidget { ... }
+```
+
+---
+
+### 高质量体验：滑动返回 (Swipe Back)
+
+TpRouter 提供了一个高质量的滑动返回手势 (`TpPageType.swipeBack`)，支持 iOS 和 Android。
+
+*   **全屏触发**：默认支持从屏幕任意位置右滑返回（可配置）。
+*   **原生触感**：包含平滑的动画和阴影效果，完美模拟原生 iOS 体验。
+*   **冲突解决**：能智能识别当前页面是否有横向滚动组件（如列表或 PageView），避免手势冲突。
+
 
 ---
 

@@ -1,3 +1,10 @@
+## 0.3.0
+
+*   **🔄 Support for Class-based Callbacks**: Updated generator to instantiate and use `TpRedirect` and `TpOnExit` classes.
+*   **🛠️ Type Reconstruction**: Added generation of `static T fromData(TpRouteData)` for all route classes.
+*   **🐚 Shell Route Optimization**: Stopped generating transition parameters for shell routes.
+*   **💅 Formatting**: Improved generated code formatting and fixed various lint warnings in output.
+
 ## 0.1.1
 
 * Added comprehensive dartdoc comments to all public APIs.

@@ -1,9 +1,12 @@
 import 'dart:async';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tp_router/src/transitions.dart';
 import 'package:tp_router_annotation/tp_router_annotation.dart';
+import 'page_factory.dart';
 import 'route.dart';
+import 'swipe_back.dart';
 
 /// Function type for building a page widget from route data.
 ///
@@ -17,6 +20,12 @@ typedef TpShellBuilder = Widget Function(BuildContext context, Widget child);
 abstract class TpRedirect<T extends TpRouteData> {
   const TpRedirect();
   FutureOr<TpRouteData?> handle(BuildContext context, T route);
+}
+
+/// Abstract class for strongly-typed exit logic.
+abstract class TpOnExit<T extends TpRouteData> {
+  const TpOnExit();
+  FutureOr<bool> onExit(BuildContext context, T state);
 }
 
 /// Abstract base class for defining route topology.
@@ -82,10 +91,18 @@ class TpRouteInfo extends TpRouteBase {
     this.barrierColor,
     this.barrierLabel,
     this.maintainState = true,
+    this.pageBuilder,
+    this.type,
   });
 
+  /// The specific type of page to construct.
+  final TpPageType? type;
+
+  /// Custom Page factory.
+  final TpPageFactory? pageBuilder;
+
   /// Logic when route executes onExit.
-  final FutureOr<bool> Function(BuildContext, GoRouterState)? onExit;
+  final FutureOr<bool> Function(BuildContext, TpRouteData)? onExit;
 
   /// Optional parent navigator key for this route.
   final GlobalKey<NavigatorState>? parentNavigatorKey;
@@ -118,46 +135,36 @@ class TpRouteInfo extends TpRouteBase {
 
   @override
   GoRoute toGoRoute({TpRouterConfig? config}) {
-    // Determine transition to use
-    final tb =
-        transition ?? config?.defaultTransition ?? TpCupertinoPageTransition();
-
-    // Determine durations
-    final tDur = transition != null
-        ? transitionDuration
-        : (config?.defaultTransitionDuration ?? transitionDuration);
-
-    final rDur = transition != null
-        ? reverseTransitionDuration
-        : (config?.defaultReverseTransitionDuration ??
-            reverseTransitionDuration);
-
     // Use pageBuilder for custom transitions
     return GoRoute(
       path: path,
       name: name,
-      onExit: onExit,
+      onExit: onExit != null
+          ? (context, state) => onExit!(context, _buildRouteData(state))
+          : null,
       parentNavigatorKey: parentNavigatorKey,
       redirect: _handleRedirect,
       pageBuilder: (context, state) {
         final data = _buildRouteData(state);
-        return CustomTransitionPage(
-          arguments: data,
-          name: state.name,
+        final child = builder(data);
+
+        return _createTpPage(
+          context: context,
+          state: state,
+          data: data,
+          child: child,
+          transitionBuilder: transition,
           fullscreenDialog: fullscreenDialog,
           opaque: opaque,
-          barrierColor: barrierColor,
           barrierDismissible: barrierDismissible,
+          barrierColor: barrierColor,
           barrierLabel: barrierLabel,
           maintainState: maintainState,
-          key: state.pageKey,
-          child: builder(data),
-          transitionDuration: tDur,
-          reverseTransitionDuration: rDur,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return tb.buildTransitions(
-                context, animation, secondaryAnimation, child);
-          },
+          transitionDuration: transitionDuration,
+          reverseTransitionDuration: reverseTransitionDuration,
+          type: type,
+          pageBuilder: pageBuilder,
+          config: config,
         );
       },
       routes: children.map((c) => c.toGoRoute(config: config)).toList(),
@@ -171,14 +178,16 @@ class _ContextRouteData extends TpRouteData {
   final String fullPath;
 
   @override
-  @override
-  final String routeName;
+  final String? routeName;
 
   @override
   final Map<String, String> pathParams;
 
   @override
   final Map<String, String> queryParams;
+
+  @override
+  final LocalKey? pageKey;
 
   @override
   final dynamic extra;
@@ -189,6 +198,7 @@ class _ContextRouteData extends TpRouteData {
     required this.queryParams,
     required this.extra,
     required this.routeName,
+    this.pageKey,
   });
 }
 
@@ -219,11 +229,6 @@ class TpShellRouteInfo extends TpRouteBase {
   final String? barrierLabel;
   final bool maintainState;
 
-  /// Transition configuration.
-  final TpTransitionsBuilder? transition;
-  final Duration transitionDuration;
-  final Duration reverseTransitionDuration;
-
   const TpShellRouteInfo({
     required this.builder,
     required this.routes,
@@ -236,37 +241,42 @@ class TpShellRouteInfo extends TpRouteBase {
     this.barrierColor,
     this.barrierLabel,
     this.maintainState = true,
-    this.transition,
-    this.transitionDuration = Duration.zero,
-    this.reverseTransitionDuration = Duration.zero,
+    this.pageBuilder,
+    this.type,
   });
+
+  /// The specific type of page to construct.
+  final TpPageType? type;
+
+  /// Custom Page Factory.
+  final TpPageFactory? pageBuilder;
 
   @override
   RouteBase toGoRoute({TpRouterConfig? config}) {
-    // Determine transition
-    final tb = transition ?? const TpNoTransition();
-
     return ShellRoute(
       navigatorKey: navigatorKey,
       parentNavigatorKey: parentNavigatorKey,
       observers: observers,
       pageBuilder: (context, state, child) {
-        return CustomTransitionPage(
-          key: state.pageKey,
-          child: builder(context, child),
+        final data = _buildRouteData(state);
+        final shellChild = builder(context, child);
+        return _createTpPage(
+          context: context,
+          state: state,
+          data: data,
+          child: shellChild,
+          pageBuilder: pageBuilder,
+          transitionBuilder: const TpNoTransition(),
           fullscreenDialog: fullscreenDialog,
           opaque: opaque,
-          arguments: _buildRouteData(state),
           barrierDismissible: barrierDismissible,
           barrierColor: barrierColor,
           barrierLabel: barrierLabel,
           maintainState: maintainState,
-          transitionDuration: transitionDuration,
-          reverseTransitionDuration: reverseTransitionDuration,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return tb.buildTransitions(
-                context, animation, secondaryAnimation, child);
-          },
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+          type: type,
+          config: config,
         );
       },
       routes: routes.map((r) => r.toGoRoute(config: config)).toList(),
@@ -319,11 +329,6 @@ class TpStatefulShellRouteInfo extends TpRouteBase {
   final String? barrierLabel;
   final bool maintainState;
 
-  /// Transition configuration.
-  final TpTransitionsBuilder? transition;
-  final Duration transitionDuration;
-  final Duration reverseTransitionDuration;
-
   /// Builder for navigator observers.
   /// Used to create fresh observer instances for each branch.
   final List<NavigatorObserver> Function()? observersBuilder;
@@ -339,37 +344,46 @@ class TpStatefulShellRouteInfo extends TpRouteBase {
     this.barrierColor,
     this.barrierLabel,
     this.maintainState = true,
-    this.transition,
-    this.transitionDuration = Duration.zero,
-    this.reverseTransitionDuration = Duration.zero,
     this.observersBuilder,
+    this.pageBuilder,
+    this.type,
   });
+
+  /// The specific type of page to construct.
+  final TpPageType? type;
+
+  /// Custom Page Factory.
+  final TpPageFactory? pageBuilder;
 
   @override
   RouteBase toGoRoute({TpRouterConfig? config}) {
     // Determine transition
-    final tb = transition ?? const TpNoTransition();
+    // Determine transition
 
     return StatefulShellRoute.indexedStack(
       parentNavigatorKey: parentNavigatorKey,
       pageBuilder: (context, state, navigationShell) {
-        return CustomTransitionPage(
-          arguments: _buildRouteData(state),
-          name: state.name,
+        final data = _buildRouteData(state);
+        final shellChild =
+            builder(context, TpStatefulNavigationShell(navigationShell));
+
+        return _createTpPage(
+          context: context,
+          state: state,
+          data: data,
+          child: shellChild,
+          pageBuilder: pageBuilder,
+          transitionBuilder: const TpNoTransition(),
           fullscreenDialog: fullscreenDialog,
           opaque: opaque,
-          barrierColor: barrierColor,
           barrierDismissible: barrierDismissible,
+          barrierColor: barrierColor,
           barrierLabel: barrierLabel,
           maintainState: maintainState,
-          key: state.pageKey,
-          child: builder(context, TpStatefulNavigationShell(navigationShell)),
-          transitionDuration: transitionDuration,
-          reverseTransitionDuration: reverseTransitionDuration,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return tb.buildTransitions(
-                context, animation, secondaryAnimation, child);
-          },
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+          type: type,
+          config: config,
         );
       },
       branches: branches.asMap().entries.map((entry) {
@@ -414,6 +428,131 @@ TpRouteData _buildRouteData(GoRouterState state) {
     pathParams: state.pathParameters,
     queryParams: state.uri.queryParameters,
     extra: extraData,
-    routeName: state.name ?? state.uri.toString(),
+    routeName: state.name,
+    pageKey: state.pageKey,
+  );
+}
+
+Page<dynamic> _createTpPage({
+  required BuildContext context,
+  required GoRouterState state,
+  required TpRouteData data,
+  required Widget child,
+  required TpPageFactory? pageBuilder,
+  required TpTransitionsBuilder? transitionBuilder,
+  required bool fullscreenDialog,
+  required bool opaque,
+  required bool barrierDismissible,
+  required Color? barrierColor,
+  required String? barrierLabel,
+  required bool maintainState,
+  required Duration transitionDuration,
+  required Duration reverseTransitionDuration,
+  required TpPageType? type,
+  TpRouterConfig? config,
+}) {
+  final effectivePageBuilder = pageBuilder ?? config?.defaultPageBuilder;
+  if (effectivePageBuilder != null) {
+    return effectivePageBuilder.buildPage(context, data, child);
+  }
+
+  // Resolve transition defaults
+  final effectiveTransition = transitionBuilder ?? config?.defaultTransition;
+
+  var tDur = transitionDuration;
+  var rDur = reverseTransitionDuration;
+
+  // Only override durations if using default transition (i.e. no explicit transition on route)
+  if (transitionBuilder == null) {
+    if (config?.defaultTransitionDuration != null) {
+      tDur = config!.defaultTransitionDuration!;
+    }
+    if (config?.defaultReverseTransitionDuration != null) {
+      rDur = config!.defaultReverseTransitionDuration!;
+    }
+  }
+
+  // Determine effective page type
+  var effectiveType = type ?? config?.defaultPageType ?? TpPageType.auto;
+
+  // Resolve 'auto' to specific type if native behavior is desired
+  if (effectiveType == TpPageType.auto) {
+    // Only resolve to native page if no custom transition/dialog settings
+    if (effectiveTransition == null &&
+        opaque &&
+        barrierColor == null &&
+        !barrierDismissible) {
+      final platform = Theme.of(context).platform;
+      effectiveType =
+          (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS)
+              ? TpPageType.cupertino
+              : TpPageType.material;
+    }
+  }
+
+  // Construct specific pages
+  switch (effectiveType) {
+    case TpPageType.cupertino:
+      return CupertinoPage(
+        child: child,
+        name: state.name,
+        arguments: data,
+        key: state.pageKey,
+        fullscreenDialog: fullscreenDialog,
+        maintainState: maintainState,
+      );
+    case TpPageType.swipeBack:
+      return CustomTransitionPage(
+        arguments: data,
+        name: state.name,
+        fullscreenDialog: fullscreenDialog,
+        opaque: false,
+        barrierColor: barrierColor,
+        barrierDismissible: barrierDismissible,
+        barrierLabel: barrierLabel,
+        maintainState: maintainState,
+        key: state.pageKey,
+        child: SwipeBackWrapper(
+          child: child,
+          edgeWidth: null, // Allow swipe from anywhere
+        ),
+        transitionDuration: tDur,
+        reverseTransitionDuration: rDur,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return TpSlideTransition()
+              .buildTransitions(context, animation, secondaryAnimation, child);
+        },
+      );
+    case TpPageType.material:
+      return MaterialPage(
+        child: child,
+        name: state.name,
+        arguments: data,
+        key: state.pageKey,
+        fullscreenDialog: fullscreenDialog,
+        maintainState: maintainState,
+      );
+    default:
+      // Fall through to CustomTransitionPage
+      break;
+  }
+
+  return CustomTransitionPage(
+    arguments: data,
+    name: state.name,
+    fullscreenDialog: fullscreenDialog,
+    opaque: opaque,
+    barrierColor: barrierColor,
+    barrierDismissible: barrierDismissible,
+    barrierLabel: barrierLabel,
+    maintainState: maintainState,
+    key: state.pageKey,
+    child: child,
+    transitionDuration: tDur,
+    reverseTransitionDuration: rDur,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return (effectiveTransition ?? const TpCupertinoPageTransition())
+          .buildTransitions(context, animation, secondaryAnimation, child);
+    },
   );
 }

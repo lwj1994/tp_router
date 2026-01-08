@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tp_router/tp_router.dart';
 import '../guards/auth_guard.dart';
 
-@TpRoute(path: '/protected', redirect: authRedirect)
+@TpRoute(path: '/protected', redirect: AuthRedirect)
 class ProtectedPage extends StatelessWidget {
   const ProtectedPage({super.key});
 

@@ -6,6 +6,7 @@ import 'navigator_key_registry.dart';
 import 'route.dart';
 import 'route_observer.dart';
 import 'tp_route_info.dart';
+import 'page_factory.dart';
 
 /// Main router class that wraps go_router with tp_router routes.
 ///
@@ -85,6 +86,8 @@ class TpRouter {
     TpTransitionsBuilder? defaultTransition,
     Duration? defaultTransitionDuration,
     Duration? defaultReverseTransitionDuration,
+    TpPageType? defaultPageType,
+    TpPageFactory? defaultPageBuilder,
   }) {
     // Determine initial location logic
     // If initialLocation is provided by user, use it.
@@ -115,6 +118,8 @@ class TpRouter {
       defaultTransition: defaultTransition,
       defaultTransitionDuration: defaultTransitionDuration,
       defaultReverseTransitionDuration: defaultReverseTransitionDuration,
+      defaultPageType: defaultPageType,
+      defaultPageBuilder: defaultPageBuilder,
     );
 
     final goRoutes = routes.map((r) => r.toGoRoute(config: config)).toList();
@@ -585,7 +590,7 @@ class _StateRouteData extends TpRouteData {
   const _StateRouteData(this._state);
 
   @override
-  String get routeName => _state.name ?? _state.matchedLocation;
+  String? get routeName => _state.name;
 
   @override
   String get fullPath => _state.uri.toString();

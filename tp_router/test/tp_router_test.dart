@@ -340,6 +340,31 @@ void main() {
         findsOneWidget,
       );
     });
+    testWidgets('supports custom pageBuilder via TpPageFactory',
+        (tester) async {
+      SpyPageFactory.callCount = 0;
+      SpyPageFactory.lastKey = null;
+
+      final customRoute = TpRouteInfo(
+        path: '/custom',
+        builder: (data) => const Text('Custom Page'),
+        pageBuilder: const SpyPageFactory(),
+      );
+
+      final router = TpRouter(routes: [customRoute]);
+      await tester.pumpWidget(MaterialApp.router(
+        routerConfig: router.routerConfig,
+      ));
+      await tester.pumpAndSettle();
+
+      // Navigate to custom route
+      router.tp(TpRouteData.fromPath('/custom'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Custom Page'), findsOneWidget);
+      expect(SpyPageFactory.callCount, greaterThanOrEqualTo(1));
+      expect(SpyPageFactory.lastKey, isNotNull);
+    });
   });
 }
 
@@ -366,7 +391,6 @@ class MockRoute extends TpRouteData {
   @override
   final Map<String, dynamic> extra;
 
-  @override
   String get routeName => fullPath;
 
   const MockRoute(this.fullPath, {this.extra = const {}});
@@ -383,7 +407,6 @@ class MockRouteData extends TpRouteData {
   @override
   final Map<String, dynamic> extra;
 
-  @override
   String get routeName => fullPath;
 
   const MockRouteData({
@@ -414,6 +437,26 @@ class _CounterWidgetState extends State<CounterWidget> {
           child: const Text('Increment'),
         ),
       ],
+    );
+  }
+}
+
+class SpyPageFactory extends TpPageFactory {
+  static int callCount = 0;
+  static LocalKey? lastKey;
+
+  const SpyPageFactory();
+
+  @override
+  Page<dynamic> buildPage(
+      BuildContext context, TpRouteData data, Widget child) {
+    callCount++;
+    lastKey = data.pageKey;
+    return MaterialPage(
+      child: child,
+      key: data.pageKey,
+      name: 'SpyPage',
+      arguments: data,
     );
   }
 }

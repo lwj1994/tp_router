@@ -30,6 +30,13 @@ class AnalyticsRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_AnalyticsRoute';
 
+  /// Creates a [AnalyticsRoute] from [TpRouteData].
+  static AnalyticsRoute fromData(TpRouteData data) {
+    if (data is AnalyticsRoute) return data;
+    final settings = data;
+    return AnalyticsRoute();
+  }
+
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/dashboard/analytics',
@@ -59,6 +66,13 @@ class DashboardOverviewRoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_DashboardOverviewRoute';
+
+  /// Creates a [DashboardOverviewRoute] from [TpRouteData].
+  static DashboardOverviewRoute fromData(TpRouteData data) {
+    if (data is DashboardOverviewRoute) return data;
+    final settings = data;
+    return DashboardOverviewRoute();
+  }
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
@@ -110,6 +124,13 @@ class ReportsRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_ReportsRoute';
 
+  /// Creates a [ReportsRoute] from [TpRouteData].
+  static ReportsRoute fromData(TpRouteData data) {
+    if (data is ReportsRoute) return data;
+    final settings = data;
+    return ReportsRoute();
+  }
+
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/dashboard/reports',
@@ -145,6 +166,31 @@ class DetailsRoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_DetailsRoute';
+
+  /// Creates a [DetailsRoute] from [TpRouteData].
+  static DetailsRoute fromData(TpRouteData data) {
+    if (data is DetailsRoute) return data;
+    final settings = data;
+    final title = (() {
+      final extraValue = settings.extra['title'];
+      if (extraValue is String) {
+        return extraValue;
+      }
+      return settings.pathParams['title'] ?? settings.queryParams['title'];
+    })();
+    final level = (() {
+      final raw = settings.queryParams['level'];
+      if (raw == null) {
+        return null;
+      }
+      final parsed = int.tryParse(raw);
+      if (parsed == null) {
+        return null;
+      }
+      return parsed;
+    })();
+    return DetailsRoute(title: (title ?? 'Details'), level: (level ?? 1));
+  }
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
@@ -220,6 +266,13 @@ class LoginRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_LoginRoute';
 
+  /// Creates a [LoginRoute] from [TpRouteData].
+  static LoginRoute fromData(TpRouteData data) {
+    if (data is LoginRoute) return data;
+    final settings = data;
+    return LoginRoute();
+  }
+
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/login',
@@ -249,6 +302,13 @@ class HomeRoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_HomeRoute';
+
+  /// Creates a [HomeRoute] from [TpRouteData].
+  static HomeRoute fromData(TpRouteData data) {
+    if (data is HomeRoute) return data;
+    final settings = data;
+    return HomeRoute();
+  }
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
@@ -314,6 +374,13 @@ class SettingsRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_SettingsRoute';
 
+  /// Creates a [SettingsRoute] from [TpRouteData].
+  static SettingsRoute fromData(TpRouteData data) {
+    if (data is SettingsRoute) return data;
+    final settings = data;
+    return SettingsRoute();
+  }
+
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/settings',
@@ -350,6 +417,36 @@ class MemoryDetailRoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_MemoryDetailRoute';
+
+  /// Creates a [MemoryDetailRoute] from [TpRouteData].
+  static MemoryDetailRoute fromData(TpRouteData data) {
+    if (data is MemoryDetailRoute) return data;
+    final settings = data;
+    final memory2 = (() {
+      final extra = settings.extra;
+      if (extra.containsKey('memory2')) {
+        return extra['memory2'] as MemoryDetail;
+      }
+      if (extra is MemoryDetail) {
+        return extra;
+      }
+      throw ArgumentError('Missing required parameter: memory2');
+    })();
+    final memory = (() {
+      final extra = settings.extra;
+      if (extra.containsKey('memory')) {
+        return extra['memory'] as MemoryDetail;
+      }
+      if (extra is MemoryDetail) {
+        return extra;
+      }
+      return null;
+    })();
+    return MemoryDetailRoute(
+        memory2: memory2,
+        memory: (memory ??
+            const MemoryDetail(id: 'internal', content: 'Internal Default')));
+  }
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
@@ -425,15 +522,22 @@ class ProtectedRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_ProtectedRoute';
 
+  /// Creates a [ProtectedRoute] from [TpRouteData].
+  static ProtectedRoute fromData(TpRouteData data) {
+    if (data is ProtectedRoute) return data;
+    final settings = data;
+    return ProtectedRoute();
+  }
+
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/protected',
     name: 'tp_router_ProtectedRoute',
     isInitial: false,
     params: [],
-    redirect: (context, _) async {
-      final route = ProtectedRoute();
-      return authRedirect(context, route);
+    redirect: (context, data) async {
+      final route = ProtectedRoute.fromData(data);
+      return AuthRedirect().handle(context, route);
     },
     builder: (settings) {
       return ProtectedPage();
@@ -458,6 +562,13 @@ class RouteRemovalDemoRoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_RouteRemovalDemoRoute';
+
+  /// Creates a [RouteRemovalDemoRoute] from [TpRouteData].
+  static RouteRemovalDemoRoute fromData(TpRouteData data) {
+    if (data is RouteRemovalDemoRoute) return data;
+    final settings = data;
+    return RouteRemovalDemoRoute();
+  }
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
@@ -489,6 +600,13 @@ class RouteStackPageARoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_RouteStackPageARoute';
 
+  /// Creates a [RouteStackPageARoute] from [TpRouteData].
+  static RouteStackPageARoute fromData(TpRouteData data) {
+    if (data is RouteStackPageARoute) return data;
+    final settings = data;
+    return RouteStackPageARoute();
+  }
+
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/route-stack/a',
@@ -519,6 +637,13 @@ class RouteStackPageBRoute extends TpRouteData {
   @override
   String get routeName => 'tp_router_RouteStackPageBRoute';
 
+  /// Creates a [RouteStackPageBRoute] from [TpRouteData].
+  static RouteStackPageBRoute fromData(TpRouteData data) {
+    if (data is RouteStackPageBRoute) return data;
+    final settings = data;
+    return RouteStackPageBRoute();
+  }
+
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/route-stack/b',
@@ -548,6 +673,13 @@ class RouteStackPageCRoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_RouteStackPageCRoute';
+
+  /// Creates a [RouteStackPageCRoute] from [TpRouteData].
+  static RouteStackPageCRoute fromData(TpRouteData data) {
+    if (data is RouteStackPageCRoute) return data;
+    final settings = data;
+    return RouteStackPageCRoute();
+  }
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
@@ -586,6 +718,36 @@ class UserRoute extends TpRouteData {
 
   @override
   String get routeName => 'tp_router_UserRoute';
+
+  /// Creates a [UserRoute] from [TpRouteData].
+  static UserRoute fromData(TpRouteData data) {
+    if (data is UserRoute) return data;
+    final settings = data;
+    final id = (() {
+      final raw = settings.pathParams['id'];
+      if (raw == null) {
+        throw ArgumentError('Missing required parameter: id');
+      }
+      final parsed = int.tryParse(raw);
+      if (parsed == null) {
+        throw ArgumentError('Invalid int value for: id');
+      }
+      return parsed;
+    })();
+    final name = settings.queryParams['name'];
+    final age = (() {
+      final raw = settings.queryParams['age'];
+      if (raw == null) {
+        return null;
+      }
+      final parsed = int.tryParse(raw);
+      if (parsed == null) {
+        return null;
+      }
+      return parsed;
+    })();
+    return UserRoute(id: id, name: (name ?? ''), age: (age ?? 0));
+  }
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(

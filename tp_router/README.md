@@ -138,29 +138,11 @@ TpRouter smartly resolves constructor parameters in this order:
 
 ### Redirection / Guards
 
-TpRouter supports a powerful, type-safe redirection system. 
-You can define a redirect function or class that receives the **fully instantiated route object**.
+TpRouter supports a powerful, type-safe redirection and lifecycle system. 
+You can define a redirect class that receives the **fully instantiated route object**.
 
 **1. Define a Redirect Logic**
-```dart
-// You can access 'route.id' directly!
-FutureOr<TpRouteData?> checkUserAccess(BuildContext context, UserRoute route) {
-  if (route.id == 999) {
-    // Redirect to blocked page
-    return const BlockedRoute();
-  }
-  return null; // No redirect, proceed to page
-}
-```
-
-**2. Attach to Route**
-```dart
-@TpRoute(path: '/user/:id', redirect: checkUserAccess)
-class UserPage extends StatelessWidget { ... }
-```
-
-You can also use a class extending `TpRedirect<T>` for cleaner organization.
-
+Extend `TpRedirect<T>` to create cleaner, organized guards.
 ```dart
 class AuthRedirect extends TpRedirect<ProtectedRoute> {
   const AuthRedirect();
@@ -172,10 +154,82 @@ class AuthRedirect extends TpRedirect<ProtectedRoute> {
     return null;
   }
 }
+```
 
+**2. Attach to Route**
+Provide the **Type** of your redirect class to the annotation.
+```dart
 @TpRoute(path: '/protected', redirect: AuthRedirect)
 class ProtectedPage extends StatelessWidget { ... }
 ```
+
+### Route Lifecycle (onExit)
+
+Similarly, you can handle route exit logic (e.g., confirm before leaving) by implementing `TpOnExit<T>`.
+
+```dart
+class ConfirmExit extends TpOnExit<FormRoute> {
+  const ConfirmExit();
+  @override
+  FutureOr<bool> onExit(BuildContext context, FormRoute route) async {
+    return await showConfirmDialog(context);
+  }
+}
+
+@TpRoute(path: '/form', onExit: ConfirmExit)
+class FormPage extends StatelessWidget { ... }
+```
+
+### Advanced: Reconstruction (fromData)
+
+Every generated route class has a static `fromData` method that can reconstruct a typed route instance from generic `TpRouteData` (e.g., from a deep link or raw path).
+
+```dart
+// Reconstruct from a generic data object
+final data = TpRouteData.fromPath('/user/123');
+final userRoute = UserRoute.fromData(data);
+print(userRoute.id); // 123
+```
+
+### Custom Page Construction
+
+`tp_router` allows you to fully customize how a `Page` is constructed. This is useful if you want to use `MaterialPage`, `CupertinoPage`, or custom logic like a bottom sheet.
+
+**1. Implement `TpPageFactory`**
+```dart
+class MyMaterialPageFactory extends TpPageFactory {
+  const MyMaterialPageFactory();
+
+  @override
+  Page<dynamic> buildPage(BuildContext context, TpRouteData data, Widget child) {
+    return MaterialPage(
+      key: data.pageKey,
+      child: child,
+      name: data.routeName,
+      arguments: data.extra,
+    );
+  }
+}
+```
+
+**2. Apply via Annotation**
+Specify the factory class in `@TpRoute` or `@TpShellRoute`.
+
+```dart
+@TpRoute(path: '/details', pageBuilder: MyMaterialPageFactory)
+class DetailsPage extends StatelessWidget { ... }
+```
+
+**3. Global Configuration**
+You can also set a default page builder for all routes in the `TpRouter` constructor:
+
+```dart
+final router = TpRouter(
+  routes: tpRoutes,
+  defaultPageBuilder: const MyMaterialPageFactory(),
+);
+```
+
 
 ### Shell Routes (Nested Navigation)
 
@@ -246,22 +300,31 @@ class DashboardShell extends StatelessWidget { ... }
 class StatsPage extends StatelessWidget { ... }
 ```
 
-#### 4. Configure Page and Transitions
-You can customize page behavior, transitions, and observers for Shell Routes just like regular routes.
+#### 4. Configure Page and Observers
+You can customize page behavior, observers, and key configuration for Shell Routes. 
+
+> **Note**: Shell Routes do not have their own transitions as they act as a UI wrapper. Transitions are handled by the child routes being displayed within the shell.
 
 ```dart
 @TpShellRoute(
   navigatorKey: 'modal_shell',
   // Make the shell transparent (e.g. for dialogs)
   opaque: false,
-  // Add a custom transition
-  transition: TpFadeTransition,
-  transitionDuration: Duration(milliseconds: 300),
   // Add observers
   observers: [MyObserver],
 )
 class ModalShellPage extends StatelessWidget { ... }
 ```
+
+---
+
+### Premium Experience: Swipe Back
+
+TpRouter provides a high-quality "Swipe Back" gesture (`TpPageType.swipeBack`) that works on both iOS and Android.
+
+*   **Full Screen Gesture**: By default, it allows swiping from any position on the screen to go back (customizable).
+*   **Native Feel**: Includes smooth animations and shadow effects that mimic the native iOS experience.
+*   **Conflict Resolution**: Smart enough to ignore swipes if the underlying child (like a horizontal list) is already handling the gesture.
 
 ---
 

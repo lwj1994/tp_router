@@ -12,9 +12,12 @@ export 'src/tp_route_info.dart'
         TpShellRouteInfo,
         TpParamInfo,
         TpRouteBase,
+        TpRedirect,
+        TpOnExit,
         TpStatefulShellRouteInfo;
 export 'src/tp_router.dart';
 export 'src/route.dart';
 export 'src/route_observer.dart';
+export 'src/page_factory.dart';
 export 'src/transitions.dart';
 export 'src/navigator_key_registry.dart' show TpNavigatorKeyRegistry;

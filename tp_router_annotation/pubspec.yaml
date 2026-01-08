@@ -1,6 +1,6 @@
 name: tp_router_annotation
 description: Annotations for tp_router.
-version: 0.2.0
+version: 0.3.0
 homepage: https://github.com/lwj1994/tp_router
 
 environment:

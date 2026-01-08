@@ -68,6 +68,8 @@ The generator creates:
 - **Parameter extraction**: Automatic handling of path, query, and extra parameters
 - **Route configuration**: `TpRouteInfo` objects for go_router integration  
 - **Global route list**: `tpRoutes` containing all routes in your app
+- **Static `fromData` method**: Reconstruct typed route instances from generic data objects
+- **Class-based Callbacks**: Support for `TpRedirect` and `TpOnExit` implementations
 
 ## Configuration
 
@@ -89,6 +91,8 @@ targets:
 - ✅ Supports custom transitions and global configuration
 - ✅ Supports shell routes (`TpShellRoute`, `TpStatefulShellRoute`)
 - ✅ Compile-time validation of route parameters
+- ✅ Static reconstruction via `fromData` method
+- ✅ Class-based redirection and lifecycle guards
 - ✅ Automatic path generation from class names
 
 ## Related Packages

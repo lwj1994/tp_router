@@ -212,10 +212,12 @@ class TpRouterBuilder implements Builder {
     String? onExit;
     final onExitReader = annotation.peek('onExit');
     if (onExitReader != null && !onExitReader.isNull) {
-      final func = onExitReader.objectValue.toFunctionValue();
-      if (func != null) {
-        onExit = func.name;
-        extraImports.add(func.library.identifier);
+      final typeValue = onExitReader.objectValue.toTypeValue();
+      if (typeValue != null && typeValue.element != null) {
+        onExit = typeValue.element!.name;
+        if (typeValue.element!.library != null) {
+          extraImports.add(typeValue.element!.library!.identifier);
+        }
       }
     }
 
@@ -234,6 +236,12 @@ class TpRouterBuilder implements Builder {
 
     final barrierLabel = annotation.peek('barrierLabel')?.stringValue;
     final maintainState = annotation.peek('maintainState')?.boolValue ?? true;
+
+    // Extract pageBuilder
+    final pageBuilder = _extractPageBuilder(annotation);
+    if (pageBuilder?.importPath != null) {
+      extraImports.add(pageBuilder!.importPath!);
+    }
 
     return _RouteData(
       className: className,
@@ -258,6 +266,8 @@ class TpRouterBuilder implements Builder {
       barrierLabel: barrierLabel,
       maintainState: maintainState,
       extraImports: extraImports,
+      pageBuilder: pageBuilder,
+      pageType: _extractPageType(annotation),
     );
   }
 
@@ -290,6 +300,24 @@ class TpRouterBuilder implements Builder {
       );
     }
 
+    return null;
+  }
+
+  PageBuilderInfo? _extractPageBuilder(ConstantReader annotation) {
+    final pbReader = annotation.peek('pageBuilder');
+    if (pbReader == null || pbReader.isNull) return null;
+
+    final pbValue = pbReader.objectValue;
+    final pbType = pbValue.toTypeValue();
+
+    if (pbType != null && pbType.element != null) {
+      final element = pbType.element!;
+      if (element.name == null) return null;
+      return PageBuilderInfo(
+        name: element.name!,
+        importPath: element.library?.identifier,
+      );
+    }
     return null;
   }
 
@@ -384,10 +412,17 @@ class TpRouterBuilder implements Builder {
     final maintainState = annotation.peek('maintainState')?.boolValue ?? true;
 
     // Extract barrierColor (Color object)
+    // Extract barrierColor (Color object)
     int? barrierColor;
     final colorReader = annotation.peek('barrierColor');
     if (colorReader != null && !colorReader.isNull) {
       barrierColor = colorReader.objectValue.getField('value')?.toIntValue();
+    }
+
+    // Extract pageBuilder
+    final pageBuilder = _extractPageBuilder(annotation);
+    if (pageBuilder?.importPath != null) {
+      extraImports.add(pageBuilder!.importPath!);
     }
 
     return _ShellRouteData(
@@ -405,12 +440,8 @@ class TpRouterBuilder implements Builder {
       barrierColor: barrierColor,
       barrierLabel: barrierLabel,
       maintainState: maintainState,
-      transitionType: _extractTransitionType(annotation),
-      transitionDuration: _extractDuration(annotation, 'transitionDuration'),
-      reverseTransitionDuration: _extractDuration(
-        annotation,
-        'reverseTransitionDuration',
-      ),
+      pageBuilder: pageBuilder,
+      pageType: _extractPageType(annotation),
     );
   }
 
@@ -703,18 +734,9 @@ class TpRouterBuilder implements Builder {
       if (route.barrierLabel != null)
         buffer.writeln("    barrierLabel: '${route.barrierLabel}',");
       if (!route.maintainState) buffer.writeln('    maintainState: false,');
-      if (route.transitionType != null) {
-        buffer.writeln('    transition: ${route.transitionType},');
-      }
-      if (route.transitionDuration != Duration.zero) {
-        buffer.writeln(
-          '    transitionDuration: const Duration(microseconds: ${route.transitionDuration.inMicroseconds}),',
-        );
-      }
-      if (route.reverseTransitionDuration != Duration.zero) {
-        buffer.writeln(
-          '    reverseTransitionDuration: const Duration(microseconds: ${route.reverseTransitionDuration.inMicroseconds}),',
-        );
+
+      if (route.pageBuilder != null) {
+        buffer.writeln('    pageBuilder: ${route.pageBuilder!.name}(),');
       }
 
       buffer.writeln('  );');
@@ -754,30 +776,14 @@ class TpRouterBuilder implements Builder {
       if (route.barrierLabel != null)
         buffer.writeln("    barrierLabel: '${route.barrierLabel}',");
       if (!route.maintainState) buffer.writeln('    maintainState: false,');
-      if (route.transitionType != null) {
-        buffer.writeln('    transition: ${route.transitionType},');
+
+      if (route.pageBuilder != null) {
+        buffer.writeln('    pageBuilder: ${route.pageBuilder!.name}(),');
       }
-      if (route.transitionDuration != Duration.zero) {
-        buffer.writeln(
-          '    transitionDuration: const Duration(microseconds: ${route.transitionDuration.inMicroseconds}),',
-        );
-      }
-      if (route.reverseTransitionDuration != Duration.zero) {
-        buffer.writeln(
-          '    reverseTransitionDuration: const Duration(microseconds: ${route.reverseTransitionDuration.inMicroseconds}),',
-        );
+      if (route.pageType != null) {
+        buffer.writeln('    type: ${route.pageType},');
       }
 
-      // Generate parentNavigatorKey
-      /*
-      // For StatefulShellRoute, parentNavigatorKey usually points to nothing valid
-      // because StatefulShells use branch keys. So we must rely on implicit nesting.
-      final parentKeyRef =
-          _findShellRouteGlobalKey(route.parentNavigatorKey, allRoutes);
-      if (parentKeyRef != null) {
-        buffer.writeln('    parentNavigatorKey: $parentKeyRef,');
-      }
-      */
       buffer.writeln('  );');
     }
 
@@ -844,6 +850,40 @@ class TpRouterBuilder implements Builder {
     );
     buffer.writeln();
 
+    buffer.writeln(
+        '  /// Creates a [${route.routeClassName}] from [TpRouteData].');
+    buffer.writeln(
+        '  static ${route.routeClassName} fromData(TpRouteData data) {');
+    buffer.writeln('    if (data is ${route.routeClassName}) return data;');
+    buffer.writeln('    final settings = data;');
+    for (final param in route.params) {
+      buffer.writeln(_generateParamExtraction(param));
+    }
+    buffer.writeln('    return ${route.routeClassName}(');
+    final routeConstructorArgs = <String>[];
+    for (final p in route.params) {
+      if (p.isNamed) {
+        if (!p.isRequired && p.defaultValueCode != null) {
+          routeConstructorArgs.add(
+            '${p.name}: (${p.name} ?? ${p.defaultValueCode})',
+          );
+        } else {
+          routeConstructorArgs.add('${p.name}: ${p.name}');
+        }
+      } else {
+        if (!p.isRequired && p.defaultValueCode != null) {
+          routeConstructorArgs.add('(${p.name} ?? ${p.defaultValueCode})');
+        } else {
+          routeConstructorArgs.add(p.name);
+        }
+      }
+    }
+    buffer.writeln('      ${routeConstructorArgs.join(',\n      ')}');
+    buffer.writeln('    );');
+    buffer.writeln('  }');
+
+    buffer.writeln();
+
     // Static routeInfo (inline TpRouteInfo)
     buffer.writeln('  /// The route info for this route.');
     buffer.writeln('  static final TpRouteInfo routeInfo = TpRouteInfo(');
@@ -865,7 +905,8 @@ class TpRouterBuilder implements Builder {
     */
 
     if (route.onExit != null) {
-      buffer.writeln('    onExit: ${route.onExit},');
+      buffer.writeln(
+          '    onExit: (context, data) => ${route.onExit}().onExit(context, $routeClassName.fromData(data)),');
     }
 
     if (route.fullscreenDialog) {
@@ -886,6 +927,9 @@ class TpRouterBuilder implements Builder {
     if (!route.maintainState) {
       buffer.writeln('    maintainState: false,');
     }
+    if (route.pageType != null) {
+      buffer.writeln('    type: ${route.pageType},');
+    }
     buffer.write('    params: [');
     if (route.params.isEmpty) {
       buffer.writeln('],');
@@ -904,41 +948,12 @@ class TpRouterBuilder implements Builder {
     }
     if (route.redirect != null) {
       buffer.writeln(
-        '    redirect: (context, ${route.params.isEmpty ? '_' : 'state'}) async {',
+        '    redirect: (context, data) async {',
       );
-
-      if (route.params.isNotEmpty) {
-        buffer.writeln('      final settings = state;');
-        for (final param in route.params) {
-          buffer.writeln(_generateParamExtraction(param));
-        }
-      }
-
-      // Instantiate route
-      buffer.write('      final route = ${route.routeClassName}(');
-      final constructorArgs = <String>[];
-      for (final p in route.params) {
-        if (p.isNamed) {
-          if (!p.isRequired && p.defaultValueCode != null) {
-            constructorArgs.add(
-              '${p.name}: (${p.name} ?? ${p.defaultValueCode})',
-            );
-          } else {
-            constructorArgs.add('${p.name}: ${p.name}');
-          }
-        } else {
-          if (!p.isRequired && p.defaultValueCode != null) {
-            constructorArgs.add('(${p.name} ?? ${p.defaultValueCode})');
-          } else {
-            constructorArgs.add(p.name);
-          }
-        }
-      }
-      buffer.writeln('${constructorArgs.join(', ')});');
-
+      buffer.writeln('      final route = $routeClassName.fromData(data);');
       if (route.redirect!.isClass) {
         buffer.writeln(
-          '      return const ${route.redirect!.name}().handle(context, route);',
+          '      return ${route.redirect!.name}().handle(context, route);',
         );
       } else {
         buffer.writeln('      return ${route.redirect!.name}(context, route);');
@@ -982,6 +997,9 @@ class TpRouterBuilder implements Builder {
       buffer.writeln(
         '    reverseTransitionDuration: const Duration(microseconds: ${route.reverseTransitionDuration.inMicroseconds}),',
       );
+    }
+    if (route.pageBuilder != null) {
+      buffer.writeln('    pageBuilder: ${route.pageBuilder!.name}(),');
     }
 
     buffer.writeln('  );');
@@ -1195,6 +1213,21 @@ ${extraCheck.isNotEmpty ? '$extraCheck\n' : ''}        final raw = $stringSource
     const primitives = ['String', 'int', 'double', 'bool', 'num'];
     return !primitives.contains(type);
   }
+
+  /// Extracts the page type from annotation.
+  String? _extractPageType(ConstantReader annotation) {
+    final reader = annotation.peek('type');
+    if (reader == null || reader.isNull) return null;
+
+    final index = reader.objectValue.getField('index')?.toIntValue();
+    if (index != null) {
+      const types = ['auto', 'material', 'cupertino', 'swipeBack', 'custom'];
+      if (index >= 0 && index < types.length) {
+        return 'TpPageType.${types[index]}';
+      }
+    }
+    return null;
+  }
 }
 
 /// Result of checking annotations.
@@ -1211,6 +1244,13 @@ class RedirectInfo {
   final bool isClass;
 
   RedirectInfo({required this.name, this.importPath, this.isClass = false});
+}
+
+class PageBuilderInfo {
+  final String name;
+  final String? importPath;
+
+  PageBuilderInfo({required this.name, this.importPath});
 }
 
 /// Base data for any route.
@@ -1241,6 +1281,7 @@ class _RouteData implements _BaseRouteData {
   final int? barrierColor;
   final String? barrierLabel;
   final bool maintainState;
+  final PageBuilderInfo? pageBuilder;
   final Set<String> extraImports;
 
   _RouteData({
@@ -1262,8 +1303,12 @@ class _RouteData implements _BaseRouteData {
     this.barrierColor,
     this.barrierLabel,
     this.maintainState = true,
+    this.pageBuilder,
     this.extraImports = const {},
+    this.pageType,
   });
+
+  final String? pageType;
 }
 
 /// Data for a shell route.
@@ -1285,9 +1330,7 @@ class _ShellRouteData implements _BaseRouteData {
   final int? barrierColor;
   final String? barrierLabel;
   final bool maintainState;
-  final String? transitionType;
-  final Duration transitionDuration;
-  final Duration reverseTransitionDuration;
+  final PageBuilderInfo? pageBuilder;
 
   _ShellRouteData({
     required this.className,
@@ -1304,10 +1347,11 @@ class _ShellRouteData implements _BaseRouteData {
     this.barrierColor,
     this.barrierLabel,
     this.maintainState = true,
-    this.transitionType,
-    this.transitionDuration = Duration.zero,
-    this.reverseTransitionDuration = Duration.zero,
+    this.pageBuilder,
+    this.pageType,
   });
+
+  final String? pageType;
 }
 
 /// Data for a parameter.

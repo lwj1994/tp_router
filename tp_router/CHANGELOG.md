@@ -1,3 +1,19 @@
+## 0.3.0
+*   **🔄 Breaking Change: Class-based Callbacks**
+    *   Refactored `onExit` and `redirect` in `@TpRoute` to use a class-based approach. Users now implement `TpOnExit<T>` and `TpRedirect<T>` interfaces.
+    *   Annotation parameters `onExit` and `redirect` now accept `Type`.
+*   **🛠️ Improvements: Type Safety & Reconstruction**
+    *   Added `static T fromData(TpRouteData)` to generated route classes for safe reconstruction of strongly-typed route objects.
+    *   The generated `redirect` and `onExit` callbacks now automatically use `fromData` to ensure provide a valid typed instance, even if navigated via raw path or `fromPath`.
+*   ** PREMIUM Experience: Swipe Back**
+    *   Improved `TpPageType.swipeBack` with full-screen gesture support (by default).
+    *   Added smooth shadow animations and conflict detection (ignores swipe if child scrolls horizontal).
+*   **🐚 Shell Route Cleanup**
+    *   Removed transition configuration from `@TpShellRoute`. Shells now use `TpNoTransition` by default to avoid redundant animations.
+*   **📝 API Refinement**
+    *   Made `TpRouteData.routeName` nullable to better represent unnamed routes.
+    *   Updated `removeRoute` logic to gracefully handle unnamed routes.
+
 ## 0.2.0
 *   **✨ New Features: Smart Route Removal**
     *   Added `context.tpRouter.removeRoute()` and `removeWhere()`.

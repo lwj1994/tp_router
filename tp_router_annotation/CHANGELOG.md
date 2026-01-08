@@ -1,3 +1,9 @@
+## 0.3.0
+
+*   **🔄 Breaking Change**: Changed `onExit` and `redirect` fields in `@TpRoute` from function type to `Type?`.
+*   **🐚 Shell Route Cleanup**: Removed `transition`, `transitionDuration`, and `reverseTransitionDuration` from `@TpShellRoute`. Shells are now treated as transparent UI wrappers.
+*   Removed `TpOnExit` and `TpRedirect` abstract classes (moved to `tp_router` package).
+
 ## 0.1.1
 
 * Documentation improvements and package metadata updates.
