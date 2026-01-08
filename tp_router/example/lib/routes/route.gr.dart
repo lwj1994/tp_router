@@ -266,7 +266,7 @@ class DetailsRoute extends TpRouteData {
         if (extraValue is String) {
           return extraValue;
         }
-        return settings.pathParams['title'] ?? settings.queryParams['title'];
+        return settings.pathParams['title'] ?? settings.queryParams['title'] ?? null;
       })();
       final level = (() {
         final raw = settings.queryParams['level'];

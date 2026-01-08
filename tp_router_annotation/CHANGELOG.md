@@ -1,3 +1,7 @@
+## 0.4.0
+
+*   **Breaking Change**: Changed `navigatorKey` in `TpShellRoute` and `parentNavigatorKey` in `TpRoute` from `String` to `Type` to support type-safe NavKeys.
+
 ## 0.3.0
 
 *   **🔄 Breaking Change**: Changed `onExit` and `redirect` fields in `@TpRoute` from function type to `Type?`.

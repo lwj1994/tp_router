@@ -672,19 +672,6 @@ class TpRouterBuilder implements Builder {
     return branches;
   }
 
-  String? _findShellRouteGlobalKey(
-    String? parentKey,
-    List<_BaseRouteData> allRoutes,
-  ) {
-    if (parentKey == null) return null;
-    for (final route in allRoutes) {
-      if (route is _ShellRouteData && route.navigatorKey == parentKey) {
-        return '${route.routeClassName}.navigatorGlobalKey';
-      }
-    }
-    return null; // Or throw error? For now, null means no parent found (or user provided weird key)
-  }
-
   String _generateShellRouteClass(
     _ShellRouteData route,
     List<_BaseRouteData> allRoutes,

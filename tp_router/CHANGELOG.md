@@ -1,3 +1,8 @@
+## 0.4.0
+
+*   **Type-Safe NavKeys**: Introduced `TpNavKey` class for strong-typed navigator keys. Deprecated usage of raw Strings for navigator keys in favor of `TpNavKey` subclasses.
+*   **Security**: Enhanced `TpRouter.tp()` to enforce mutual exclusivity between `context` and `navigatorKey`.
+
 ## 0.3.0
 *   **🔄 Breaking Change: Class-based Callbacks**
     *   Refactored `onExit` and `redirect` in `@TpRoute` to use a class-based approach. Users now implement `TpOnExit<T>` and `TpRedirect<T>` interfaces.

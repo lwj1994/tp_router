@@ -1,3 +1,8 @@
+## 0.4.0
+
+*   **Type-Safe NavKeys**: Updated generation logic to support `Type`-based navigator keys. Shell routes now instantiate NavKeys and reference their `key` property.
+*   **Crash Fix**: Added null-aware access (`?.`) for extra parameter extraction to prevent crashes when `extra` is null at runtime.
+
 ## 0.3.0
 
 *   **🔄 Support for Class-based Callbacks**: Updated generator to instantiate and use `TpRedirect` and `TpOnExit` classes.
