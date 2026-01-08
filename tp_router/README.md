@@ -252,7 +252,7 @@ You can customize page behavior, transitions, and observers for Shell Routes jus
 @TpShellRoute(
   navigatorKey: 'modal_shell',
   // Make the shell transparent (e.g. for dialogs)
-  opaque: false, 
+  opaque: false,
   // Add a custom transition
   transition: TpFadeTransition,
   transitionDuration: Duration(milliseconds: 300),

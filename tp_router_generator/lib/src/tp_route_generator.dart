@@ -837,17 +837,23 @@ class TpRouterBuilder implements Builder {
     buffer.writeln(');');
     buffer.writeln();
 
-    // Path getter
-    buffer.writeln('  /// The route path.');
-    buffer.writeln("  static const String path = '${route.path}';");
+    // Route name getter (override from TpRouteData)
+    final generatedName = route.name ?? route.routeClassName;
+    buffer.writeln('  @override');
+    buffer.writeln("  String get routeName => 'tp_router_$generatedName';");
     buffer.writeln();
 
     // Static routeInfo (inline TpRouteInfo)
     buffer.writeln('  /// The route info for this route.');
     buffer.writeln('  static final TpRouteInfo routeInfo = TpRouteInfo(');
     buffer.writeln("    path: '${route.path}',");
+
+    // Add tp_router_ prefix to name for identification in Observer
     if (route.name != null) {
-      buffer.writeln("    name: '${route.name}',");
+      buffer.writeln("    name: 'tp_router_${route.name}',");
+    } else {
+      // Use route class name as fallback
+      buffer.writeln("    name: 'tp_router_${route.routeClassName}',");
     }
     buffer.writeln('    isInitial: ${route.isInitial},');
     // Generate parentNavigatorKey

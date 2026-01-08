@@ -8,4 +8,5 @@ export 'package:tp_router_annotation/tp_router_annotation.dart';
 export 'src/tp_route_info.dart';
 export 'src/tp_router.dart';
 export 'src/route.dart';
+export 'src/route_observer.dart';
 export 'src/transitions.dart';

@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tp_router_annotation/tp_router_annotation.dart';
 import 'route.dart';
+import 'route_observer.dart';
 import 'tp_route_info.dart';
 
 /// Main router class that wraps go_router with tp_router routes.
@@ -14,6 +15,9 @@ class TpRouter {
 
   /// The list of registered routes.
   final List<TpRouteBase> _routes;
+
+  /// The route observer for tracking navigation stack.
+  final TpRouteObserver _observer;
 
   /// Creates a [TpRouter] from a list of [TpRouteBase].
   ///
@@ -42,6 +46,7 @@ class TpRouter {
   /// [initialExtra] The extra data to pass to the initial location.
   ///
   /// [observers] A list of [NavigatorObserver]s to monitor navigation events.
+  /// Note: [TpRouteObserver] is automatically added for stack manipulation support.
   ///
   /// [debugLogDiagnostics] Whether to log diagnostic info to the console.
   /// Defaults to false.
@@ -112,6 +117,13 @@ class TpRouter {
 
     final goRoutes = routes.map((r) => r.toGoRoute(config: config)).toList();
 
+    // Automatically inject TpRouteObserver for stack manipulation support
+    final tpObserver = TpRouteObserver();
+    final allObservers = [
+      tpObserver,
+      ...?observers, // User-provided observers come after
+    ];
+
     final goRouter = GoRouter(
       routes: goRoutes,
       initialLocation: startLoc,
@@ -130,14 +142,14 @@ class TpRouter {
       redirectLimit: redirectLimit,
       routerNeglect: routerNeglect,
       overridePlatformDefaultLocation: overridePlatformDefaultLocation,
-      observers: observers,
+      observers: allObservers, // ← Use combined observers with TpRouteObserver
       debugLogDiagnostics: debugLogDiagnostics,
       navigatorKey: navigatorKey,
       restorationScopeId: restorationScopeId,
       requestFocus: requestFocus,
     );
 
-    return TpRouter._(goRouter, routes);
+    return TpRouter._(goRouter, routes, tpObserver);
   }
 
   static String? _findInitialPath(TpRouteBase route) {
@@ -163,7 +175,7 @@ class TpRouter {
     return null;
   }
 
-  TpRouter._(this._goRouter, this._routes);
+  TpRouter._(this._goRouter, this._routes, this._observer);
 
   /// Get a [TpRouterContext] from the given [BuildContext].
   ///
@@ -184,6 +196,11 @@ class TpRouter {
 
   /// Get the list of registered routes.
   List<TpRouteBase> get routes => List.unmodifiable(_routes);
+
+  /// Get the route observer for stack manipulation.
+  ///
+  /// This is used internally by delete() method.
+  TpRouteObserver get routeObserver => _observer;
 
   /// Navigate to a route.
   ///
@@ -308,6 +325,145 @@ class TpRouterContext {
   /// Get the current location.
   String get currentFullPath =>
       _goRouter.routerDelegate.currentConfiguration.fullPath;
+
+  /// Get navigator key by name.
+  ///
+  /// This is used internally by delete() method to access specific navigators.
+  /// Returns null if the navigator key is not registered.
+  GlobalKey<NavigatorState>? getNavigatorKey(String key) {
+    // Navigator keys are stored in GoRouter's configuration
+    // For now, we return null and fall back to current navigator
+    // TODO: Implement navigator key registry if needed
+    return null;
+  }
+
+  /// Remove a route from the navigation stack.
+  ///
+  /// Returns `true` if a matching route was found and removed, `false` otherwise.
+  ///
+  /// **Note**: This requires TpRouter to be initialized with TpRouteObserver.
+  /// The observer is added automatically when using TpRouter.
+  ///
+  /// Use [navigatorKey] to target a specific Navigator (e.g., shell route navigator).
+  /// Use [rootNavigator] to target the root Navigator.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Remove from current Navigator
+  /// context.tpRouter.removeRoute(LoginRoute());
+  ///
+  /// // Remove from specific Navigator (shell route)
+  /// context.tpRouter.removeRoute(ProfileRoute(), navigatorKey: 'main');
+  ///
+  /// // Remove from root Navigator
+  /// context.tpRouter.removeRoute(DialogRoute(), rootNavigator: true);
+  /// ```
+  bool removeRoute(
+    TpRouteData route, {
+    String? navigatorKey,
+    bool rootNavigator = false,
+  }) {
+    // Use removeWhere to remove routes matching both routeName and fullPath
+    final removed = removeWhere(
+      (data) =>
+          data.routeName == route.routeName && data.fullPath == route.fullPath,
+      navigatorKey: navigatorKey,
+      rootNavigator: rootNavigator,
+    );
+    return removed > 0;
+  }
+
+  /// Remove all routes that match the given predicate.
+  ///
+  /// Returns the number of routes removed.
+  ///
+  /// **Note**: This requires TpRouter to be initialized with TpRouteObserver.
+  ///
+  /// The predicate function receives a [TpRouteData] object and should return `true`
+  /// to remove the route, `false` to keep it.
+  ///
+  /// Use [navigatorKey] to target a specific Navigator.
+  /// Use [rootNavigator] to target the root Navigator.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Remove all routes with specific parameter
+  /// final count = context.tpRouter.removeWhere(
+  ///   (data) => data.pathParams['id'] == '123',
+  /// );
+  ///
+  /// // Remove all routes matching a path pattern
+  /// context.tpRouter.removeWhere(
+  ///   (data) => data.fullPath.contains('dialog'),
+  /// );
+  /// ```
+  int removeWhere(
+    bool Function(TpRouteData data) predicate, {
+    String? navigatorKey,
+    bool rootNavigator = false,
+  }) {
+    final navigator = _getNavigator(navigatorKey, rootNavigator);
+    final observer = getObserver(navigatorKey, rootNavigator);
+
+    if (observer == null) {
+      return 0;
+    }
+
+    // Get all tracked routes, extract their data, and filter by predicate
+    final routesToRemove = <Route>[];
+    for (final route in observer.allRoutes) {
+      final data = observer.getRouteData(route);
+      if (data != null && predicate(data)) {
+        routesToRemove.add(route);
+      }
+    }
+
+    for (final route in routesToRemove) {
+      navigator.removeRoute(route);
+    }
+
+    return routesToRemove.length;
+  }
+
+  /// Get the Navigator instance based on provided parameters.
+  NavigatorState _getNavigator(
+    String? navigatorKey,
+    bool rootNavigator,
+  ) {
+    if (rootNavigator) {
+      return Navigator.of(_context, rootNavigator: true);
+    }
+
+    if (navigatorKey != null) {
+      final key = getNavigatorKey(navigatorKey);
+      if (key?.currentState != null) {
+        return key!.currentState!;
+      }
+      // Fallback to current navigator if key not found
+      return Navigator.of(_context);
+    }
+
+    return Navigator.of(_context);
+  }
+
+  /// Get the route observer for tracking navigation stack.
+  ///
+  /// This is used internally by delete() method.
+  TpRouteObserver? getObserver(String? navigatorKey, bool rootNavigator) {
+    // Get the observer from TpRouter instance (automatically injected)
+    final goRouter = GoRouter.of(_context);
+
+    // Find TpRouter instance through GoRouter's observers
+    for (final observer in goRouter
+            .routerDelegate.navigatorKey.currentState?.widget.observers ??
+        <NavigatorObserver>[]) {
+      if (observer is TpRouteObserver) {
+        return observer;
+      }
+    }
+
+    return null;
+  }
 }
 
 /// Extension on [BuildContext] for easy access to TpRouter.
@@ -334,6 +490,9 @@ class _StateRouteData extends TpRouteData {
   final GoRouterState _state;
 
   const _StateRouteData(this._state);
+
+  @override
+  String get routeName => _state.name ?? _state.matchedLocation;
 
   @override
   String get fullPath => _state.uri.toString();

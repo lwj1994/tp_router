@@ -366,6 +366,9 @@ class MockRoute extends TpRouteData {
   @override
   final Map<String, dynamic> extra;
 
+  @override
+  String get routeName => fullPath;
+
   const MockRoute(this.fullPath, {this.extra = const {}});
 }
 
@@ -379,6 +382,9 @@ class MockRouteData extends TpRouteData {
   final Map<String, String> queryParams;
   @override
   final Map<String, dynamic> extra;
+
+  @override
+  String get routeName => fullPath;
 
   const MockRouteData({
     required this.fullPath,

@@ -33,6 +33,12 @@ class TpRouterConfig {
 /// final userId = data.getInt('id');
 /// ```
 abstract class TpRouteData {
+  /// The route name used for identification in TpRouteObserver.
+  ///
+  /// This is automatically set to the name from @TpRoute annotation
+  /// with 'tp_router_' prefix.
+  String get routeName;
+
   /// The full path of the route including query parameters.
   String get fullPath;
 
@@ -196,6 +202,9 @@ class _PathRoute extends TpRouteData {
   @override
   final String fullPath;
 
+  @override
+  String get routeName => fullPath; // Use path as name for path-based routes
+
   final Map<String, dynamic> _extra;
 
   @override
@@ -209,6 +218,9 @@ class _PathRoute extends TpRouteData {
 class _ContextRouteData extends TpRouteData {
   @override
   final String fullPath;
+
+  @override
+  String get routeName => fullPath;
 
   @override
   final Map<String, String> pathParams;

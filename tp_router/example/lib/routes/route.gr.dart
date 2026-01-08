@@ -27,12 +27,13 @@ import 'package:example/pages/user_page.dart';
 class AnalyticsRoute extends TpRouteData {
   const AnalyticsRoute();
 
-  /// The route path.
-  static const String path = '/dashboard/analytics';
+  @override
+  String get routeName => 'tp_router_AnalyticsRoute';
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/dashboard/analytics',
+    name: 'tp_router_AnalyticsRoute',
     isInitial: false,
     params: [],
     builder: (settings) {
@@ -45,7 +46,9 @@ class AnalyticsRoute extends TpRouteData {
     var p = '/dashboard/analytics';
     return p;
   }
+
 }
+
 
 /// Route class for [DashboardOverviewPage].
 ///
@@ -56,12 +59,13 @@ class AnalyticsRoute extends TpRouteData {
 class DashboardOverviewRoute extends TpRouteData {
   const DashboardOverviewRoute();
 
-  /// The route path.
-  static const String path = '/dashboard/overview';
+  @override
+  String get routeName => 'tp_router_DashboardOverviewRoute';
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/dashboard/overview',
+    name: 'tp_router_DashboardOverviewRoute',
     isInitial: false,
     params: [],
     builder: (settings) {
@@ -74,11 +78,12 @@ class DashboardOverviewRoute extends TpRouteData {
     var p = '/dashboard/overview';
     return p;
   }
+
 }
 
+
 class DashboardShellRoute {
-  static final navigatorGlobalKey =
-      GlobalKey<NavigatorState>(debugLabel: 'dashboard');
+  static final navigatorGlobalKey = GlobalKey<NavigatorState>(debugLabel: 'dashboard');
   static const navigatorKey = 'dashboard';
 
   static final TpShellRouteInfo routeInfo = TpShellRouteInfo(
@@ -96,6 +101,7 @@ class DashboardShellRoute {
   );
 }
 
+
 /// Route class for [ReportsPage].
 ///
 /// Usage:
@@ -105,12 +111,13 @@ class DashboardShellRoute {
 class ReportsRoute extends TpRouteData {
   const ReportsRoute();
 
-  /// The route path.
-  static const String path = '/dashboard/reports';
+  @override
+  String get routeName => 'tp_router_ReportsRoute';
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/dashboard/reports',
+    name: 'tp_router_ReportsRoute',
     isInitial: false,
     params: [],
     builder: (settings) {
@@ -123,7 +130,9 @@ class ReportsRoute extends TpRouteData {
     var p = '/dashboard/reports';
     return p;
   }
+
 }
+
 
 /// Route class for [DetailsPage].
 ///
@@ -140,12 +149,13 @@ class DetailsRoute extends TpRouteData {
     this.level = 1,
   });
 
-  /// The route path.
-  static const String path = '/details';
+  @override
+  String get routeName => 'tp_router_DetailsRoute';
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/details',
+    name: 'tp_router_DetailsRoute',
     isInitial: false,
     params: [
       TpParamInfo(
@@ -169,7 +179,7 @@ class DetailsRoute extends TpRouteData {
         if (extraValue is String) {
           return extraValue;
         }
-        return settings.pathParams['title'] ?? settings.queryParams['title'];
+        return settings.pathParams['title'] ?? settings.queryParams['title'] ?? null;
       })();
       final level = (() {
         final raw = settings.queryParams['level'];
@@ -200,9 +210,11 @@ class DetailsRoute extends TpRouteData {
 
   @override
   Map<String, dynamic> get extra => {
-        'title': title,
-      };
+    'title': title,
+  };
+
 }
+
 
 /// Route class for [HomePage].
 ///
@@ -213,12 +225,13 @@ class DetailsRoute extends TpRouteData {
 class HomeRoute extends TpRouteData {
   const HomeRoute();
 
-  /// The route path.
-  static const String path = '/';
+  @override
+  String get routeName => 'tp_router_HomeRoute';
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/',
+    name: 'tp_router_HomeRoute',
     isInitial: true,
     params: [],
     builder: (settings) {
@@ -231,7 +244,9 @@ class HomeRoute extends TpRouteData {
     var p = '/';
     return p;
   }
+
 }
+
 
 /// Route class for [LoginPage].
 ///
@@ -242,12 +257,13 @@ class HomeRoute extends TpRouteData {
 class LoginRoute extends TpRouteData {
   const LoginRoute();
 
-  /// The route path.
-  static const String path = '/login';
+  @override
+  String get routeName => 'tp_router_LoginRoute';
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/login',
+    name: 'tp_router_LoginRoute',
     isInitial: false,
     params: [],
     builder: (settings) {
@@ -260,19 +276,18 @@ class LoginRoute extends TpRouteData {
     var p = '/login';
     return p;
   }
+
 }
 
+
 class MainShellRoute {
-  static final _branchKey0 =
-      GlobalKey<NavigatorState>(debugLabel: 'main_branch_0');
-  static final _branchKey1 =
-      GlobalKey<NavigatorState>(debugLabel: 'main_branch_1');
-  static final _branchKey2 =
-      GlobalKey<NavigatorState>(debugLabel: 'main_branch_2');
+
+  static final _branchKey0 = GlobalKey<NavigatorState>(debugLabel: 'main_branch_0');
+  static final _branchKey1 = GlobalKey<NavigatorState>(debugLabel: 'main_branch_1');
+  static final _branchKey2 = GlobalKey<NavigatorState>(debugLabel: 'main_branch_2');
 
   static final TpStatefulShellRouteInfo routeInfo = TpStatefulShellRouteInfo(
-    builder: (context, navigationShell) =>
-        MainShellPage(navigationShell: navigationShell),
+    builder: (context, navigationShell) => MainShellPage(navigationShell: navigationShell),
     branches: [
       [
         HomeRoute.routeInfo,
@@ -284,17 +299,14 @@ class MainShellRoute {
         DashboardShellRoute.routeInfo,
       ],
     ],
-    branchNavigatorKeys: [
-      _branchKey0,
-      _branchKey1,
-      _branchKey2,
-    ],
+    branchNavigatorKeys: [_branchKey0, _branchKey1, _branchKey2, ],
     observersBuilder: () => [
       AObserver(),
     ],
     opaque: true,
   );
 }
+
 
 /// Route class for [MemoryDetailPage].
 ///
@@ -308,16 +320,16 @@ class MemoryDetailRoute extends TpRouteData {
 
   const MemoryDetailRoute({
     required this.memory2,
-    this.memory =
-        const MemoryDetail(id: 'internal', content: 'Internal Default'),
+    this.memory = const MemoryDetail(id: 'internal', content: 'Internal Default'),
   });
 
-  /// The route path.
-  static const String path = '/memory-detail';
+  @override
+  String get routeName => 'tp_router_MemoryDetailRoute';
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/memory-detail',
+    name: 'tp_router_MemoryDetailRoute',
     isInitial: false,
     params: [
       TpParamInfo(
@@ -342,7 +354,7 @@ class MemoryDetailRoute extends TpRouteData {
           return extra['memory2'] as MemoryDetail;
         }
         if (extra is MemoryDetail) {
-          return extra;
+          return extra as MemoryDetail;
         }
         throw ArgumentError('Missing required parameter: memory2');
       })();
@@ -352,14 +364,11 @@ class MemoryDetailRoute extends TpRouteData {
           return extra['memory'] as MemoryDetail;
         }
         if (extra is MemoryDetail) {
-          return extra;
+          return extra as MemoryDetail;
         }
         return null;
       })();
-      return MemoryDetailPage(
-          memory2: memory2,
-          memory: (memory ??
-              const MemoryDetail(id: 'internal', content: 'Internal Default')));
+      return MemoryDetailPage(memory2: memory2, memory: (memory ?? const MemoryDetail(id: 'internal', content: 'Internal Default')));
     },
   );
 
@@ -371,10 +380,12 @@ class MemoryDetailRoute extends TpRouteData {
 
   @override
   Map<String, dynamic> get extra => {
-        'memory2': memory2,
-        'memory': memory,
-      };
+    'memory2': memory2,
+    'memory': memory,
+  };
+
 }
+
 
 /// Route class for [ProtectedPage].
 ///
@@ -385,12 +396,13 @@ class MemoryDetailRoute extends TpRouteData {
 class ProtectedRoute extends TpRouteData {
   const ProtectedRoute();
 
-  /// The route path.
-  static const String path = '/protected';
+  @override
+  String get routeName => 'tp_router_ProtectedRoute';
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/protected',
+    name: 'tp_router_ProtectedRoute',
     isInitial: false,
     params: [],
     redirect: (context, _) async {
@@ -407,7 +419,9 @@ class ProtectedRoute extends TpRouteData {
     var p = '/protected';
     return p;
   }
+
 }
+
 
 /// Route class for [SettingsPage].
 ///
@@ -418,13 +432,13 @@ class ProtectedRoute extends TpRouteData {
 class SettingsRoute extends TpRouteData {
   const SettingsRoute();
 
-  /// The route path.
-  static const String path = '/settings';
+  @override
+  String get routeName => 'tp_router_settings';
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/settings',
-    name: 'settings',
+    name: 'tp_router_settings',
     isInitial: false,
     params: [],
     builder: (settings) {
@@ -437,7 +451,9 @@ class SettingsRoute extends TpRouteData {
     var p = '/settings';
     return p;
   }
+
 }
+
 
 /// Route class for [UserPage].
 ///
@@ -456,13 +472,13 @@ class UserRoute extends TpRouteData {
     this.age = 0,
   });
 
-  /// The route path.
-  static const String path = '/user/:id';
+  @override
+  String get routeName => 'tp_router_user';
 
   /// The route info for this route.
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/user/:id',
-    name: 'user',
+    name: 'tp_router_user',
     isInitial: false,
     params: [
       TpParamInfo(
@@ -525,7 +541,9 @@ class UserRoute extends TpRouteData {
     if (queryParts.isNotEmpty) p = '$p?${queryParts.join('&')}';
     return p;
   }
+
 }
+
 
 /// All generated routes in the application.
 ///

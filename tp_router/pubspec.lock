@@ -459,14 +459,14 @@ packages:
       path: "../tp_router_annotation"
       relative: true
     source: path
-    version: "0.1.0"
+    version: "0.1.1"
   tp_router_generator:
     dependency: "direct dev"
     description:
       path: "../tp_router_generator"
       relative: true
     source: path
-    version: "0.1.0"
+    version: "0.1.1"
   typed_data:
     dependency: transitive
     description:

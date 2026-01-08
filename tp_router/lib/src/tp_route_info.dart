@@ -142,7 +142,8 @@ class TpRouteInfo extends TpRouteBase {
       pageBuilder: (context, state) {
         final data = _buildRouteData(state);
         return CustomTransitionPage(
-          arguments: state.extra,
+          arguments:
+              state.extra, // Keep original extra for backward compatibility
           name: state.name,
           fullscreenDialog: fullscreenDialog,
           opaque: opaque,
@@ -169,6 +170,9 @@ class TpRouteInfo extends TpRouteBase {
 class _ContextRouteData extends TpRouteData {
   @override
   final String fullPath;
+
+  @override
+  String get routeName => fullPath;
 
   @override
   final Map<String, String> pathParams;
