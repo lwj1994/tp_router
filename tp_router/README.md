@@ -17,6 +17,7 @@ Stop writing boilerplate routing tables manually. Let `tp_router` handle it for 
 *   🛡️ **Type-Safe Parsing**: Automatically extracts `int`, `double`, `bool`, `String`, and complex objects from path, query parameters, or extra data.
 *   🔄 **Smart Redirection**: Strong-typed redirection mechanism. Check parameters before navigating.
 *   🐚 **Shell Routes & Nested Navigation**: Full support for `ShellRoute` and `StatefulShellRoute` (IndexedStack).
+*   🗑️ **Smart Route Removal**: Imperatively remove routes (even background ones) with the elegant **Pending Pop** strategy.
 *   ⚡ **Simple Navigation API**: Just call `MyRoute().tp(context)`.
 
 ---
@@ -261,6 +262,41 @@ You can customize page behavior, transitions, and observers for Shell Routes jus
 )
 class ModalShellPage extends StatelessWidget { ... }
 ```
+
+---
+
+### Smart Remove
+
+Imperative route removal (e.g., removing a page from the middle of the stack) is typically restricted in `go_router` due to its declarative, URL-based architecture.
+
+TpRouter overcomes this limitation with a smart **Pending Pop** strategy:
+
+1.  **Top Route:** If the route is at the top, it is popped immediately.
+2.  **Background Route:** It is internally marked for removal. Since forcefully modifying the `go_router` stack can break URL consistency, TpRouter waits.
+3.  **Auto-Skip:** When the user eventually navigates back and the marked route is revealed, TpRouter **automatically pops it instantly**.
+
+This creates a seamless "deletion" experience for the user while maintaining full compatibility with `go_router`'s constraints.
+
+**Examples:**
+
+```dart
+// 1. Remove a specific route instance
+// (Matches by route name and arguments)
+context.tpRouter.removeRoute(LoginRoute());
+
+// 2. Remove by logic (State cleaning)
+// Example: Remove all screens related to a deleted order
+final deletedCount = context.tpRouter.removeWhere((data) {
+  return data.pathParams['orderId'] == '12345';
+});
+
+// 3. Remove all dialogs or specific patterns
+context.tpRouter.removeWhere((data) {
+  return data.fullPath.contains('/dialog/');
+});
+```
+
+This feature is fully integrated with `TpRouteObserver`, ensuring resource cleanup and consistent state.
 
 ---
 

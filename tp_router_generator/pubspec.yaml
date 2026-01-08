@@ -1,6 +1,6 @@
 name: tp_router_generator
 description: A build_runner code generator that processes tp_router annotations to generate type-safe routing code for Flutter applications.
-version: 0.1.1
+version: 0.2.0
 homepage: https://github.com/lwj1994/tp_router
 repository: https://github.com/lwj1994/tp_router
 issue_tracker: https://github.com/lwj1994/tp_router/issues
@@ -10,7 +10,7 @@ environment:
 dependency_overrides: 
   tp_router_annotation:
     path: ../tp_router_annotation
-  
+
 dependencies:
   analyzer: ^8.4.1
   build: ^4.0.3

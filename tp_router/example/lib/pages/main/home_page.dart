@@ -80,6 +80,19 @@ class _HomePageState extends State<HomePage> {
               },
               child: const Text('Push Details (Wait Result)'),
             ),
+            const Divider(height: 32),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.delete_sweep),
+              onPressed: () {
+                // Navigate to route removal demo
+                const RouteRemovalDemoRoute().tp(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+              ),
+              label: const Text('Route Removal Demo'),
+            ),
           ],
         ),
       ),

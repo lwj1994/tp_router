@@ -1,3 +1,10 @@
+## 0.2.0
+*   **✨ New Features: Smart Route Removal**
+    *   Added `context.tpRouter.removeRoute()` and `removeWhere()`.
+    *   **Pinpoint Deletion**: Remove routes from specific navigators using `navigatorKey` or `context` scope.
+    *   **Pending Pop Strategy**: Implemented "Smart Remove" to safely delete go_router pages (including background pages) without crashing, by auto-skipping them on back navigation.
+    *   Robust handling of route updates and memory cleanup via enhanced `TpRouteObserver`.
+
 ## 0.1.1
 
 * Updated go_router dependency to ^17.0.1.

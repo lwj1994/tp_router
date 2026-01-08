@@ -28,11 +28,6 @@ class TpRoute {
   /// If null or empty, it will be auto-generated from the class name.
   final String? path;
 
-  /// Optional name for the route.
-  ///
-  /// If not provided, the class name will be used.
-  final String? name;
-
   /// Whether this route is the initial/default route.
   ///
   /// Only one route should be marked as initial.
@@ -117,7 +112,6 @@ class TpRoute {
   /// Creates a [TpRoute] annotation.
   const TpRoute({
     this.path,
-    this.name,
     this.isInitial = false,
     this.redirect,
     this.transition,

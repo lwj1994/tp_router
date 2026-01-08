@@ -4,7 +4,6 @@ import 'package:tp_router/tp_router.dart';
 /// Settings page - simple route without parameters.
 @TpRoute(
   path: '/settings',
-  name: 'settings',
   parentNavigatorKey: 'main',
   branchIndex: 1,
 )

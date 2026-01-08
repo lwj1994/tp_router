@@ -19,6 +19,14 @@ class TpRouteObserver extends NavigatorObserver {
   /// Actual TpRouteData instances for each route
   final Map<Route, TpRouteData> _routeDataMap = {};
 
+  /// Routes marked for removal when they become active.
+  final Set<Route> _pendingRemovals = {};
+
+  /// Mark a route to be removed automatically when it becomes active (is popped to).
+  void markRouteForRemoval(Route route) {
+    _pendingRemovals.add(route);
+  }
+
   /// Check if a route should be tracked by this observer.
   ///
   /// Only tracks routes with names starting with 'tp_router_' prefix.
@@ -51,6 +59,16 @@ class TpRouteObserver extends NavigatorObserver {
       _removeRouteFromMap(route);
       _routeDataMap.remove(route);
     }
+    _pendingRemovals.remove(route); // Cleanup if popped normally
+
+    // If the route revealed (previousRoute) is marked for removal, pop it.
+    if (previousRoute != null && _pendingRemovals.contains(previousRoute)) {
+      _pendingRemovals.remove(previousRoute);
+      // Schedule pop for next frame to avoid conflicting transitions
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        navigator?.pop();
+      });
+    }
   }
 
   @override
@@ -60,6 +78,7 @@ class TpRouteObserver extends NavigatorObserver {
       _removeRouteFromMap(route);
       _routeDataMap.remove(route);
     }
+    _pendingRemovals.remove(route);
   }
 
   @override
@@ -71,6 +90,8 @@ class TpRouteObserver extends NavigatorObserver {
       }
       _removeRouteFromMap(oldRoute);
       _routeDataMap.remove(oldRoute);
+      _pendingRemovals
+          .remove(oldRoute); // Cleanup pending status for replaced route
     }
     if (newRoute != null && _shouldTrackRoute(newRoute)) {
       _addRouteToMap(newRoute);

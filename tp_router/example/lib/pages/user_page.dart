@@ -14,7 +14,7 @@ import 'package:tp_router/tp_router.dart';
 /// // or type-safe:
 /// // UserRoute(id: 123, name: 'John', age: 25).tp(context);
 /// ```
-@TpRoute(path: '/user/:id', name: 'user')
+@TpRoute(path: '/user/:id')
 class UserPage extends StatelessWidget {
   /// User ID from path parameter.
   @Path('id')

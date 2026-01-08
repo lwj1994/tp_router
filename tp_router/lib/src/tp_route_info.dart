@@ -142,8 +142,7 @@ class TpRouteInfo extends TpRouteBase {
       pageBuilder: (context, state) {
         final data = _buildRouteData(state);
         return CustomTransitionPage(
-          arguments:
-              state.extra, // Keep original extra for backward compatibility
+          arguments: data,
           name: state.name,
           fullscreenDialog: fullscreenDialog,
           opaque: opaque,
@@ -172,7 +171,8 @@ class _ContextRouteData extends TpRouteData {
   final String fullPath;
 
   @override
-  String get routeName => fullPath;
+  @override
+  final String routeName;
 
   @override
   final Map<String, String> pathParams;
@@ -188,6 +188,7 @@ class _ContextRouteData extends TpRouteData {
     required this.pathParams,
     required this.queryParams,
     required this.extra,
+    required this.routeName,
   });
 }
 
@@ -255,6 +256,7 @@ class TpShellRouteInfo extends TpRouteBase {
           child: builder(context, child),
           fullscreenDialog: fullscreenDialog,
           opaque: opaque,
+          arguments: _buildRouteData(state),
           barrierDismissible: barrierDismissible,
           barrierColor: barrierColor,
           barrierLabel: barrierLabel,
@@ -352,7 +354,7 @@ class TpStatefulShellRouteInfo extends TpRouteBase {
       parentNavigatorKey: parentNavigatorKey,
       pageBuilder: (context, state, navigationShell) {
         return CustomTransitionPage(
-          arguments: state.extra,
+          arguments: _buildRouteData(state),
           name: state.name,
           fullscreenDialog: fullscreenDialog,
           opaque: opaque,
@@ -412,5 +414,6 @@ TpRouteData _buildRouteData(GoRouterState state) {
     pathParams: state.pathParameters,
     queryParams: state.uri.queryParameters,
     extra: extraData,
+    routeName: state.name ?? state.uri.toString(),
   );
 }

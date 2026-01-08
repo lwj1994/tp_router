@@ -183,7 +183,6 @@ class TpRouterBuilder implements Builder {
       path = _generateKebabCasePath(className);
     }
 
-    final name = annotation.peek('name')?.stringValue;
     final isInitial = annotation.read('isInitial').boolValue;
 
     // Analyze constructor parameters
@@ -240,7 +239,6 @@ class TpRouterBuilder implements Builder {
       className: className,
       routeClassName: routeClassName,
       path: path,
-      name: name,
       isInitial: isInitial,
       params: params,
       redirect: _extractRedirect(annotation),
@@ -628,9 +626,11 @@ class TpRouterBuilder implements Builder {
     // Generate static navigatorKey constant and GlobalKey
     if (!route.isIndexedStack) {
       buffer.writeln(
-        "  static final navigatorGlobalKey = GlobalKey<NavigatorState>(debugLabel: '${route.navigatorKey}');",
+        "  static final navigatorGlobalKey = TpNavigatorKeyRegistry.getOrCreate('${route.navigatorKey}');",
       );
-      buffer.writeln("  static const navigatorKey = '${route.navigatorKey}';");
+      buffer.writeln(
+        "  static const navigatorKey = '${route.navigatorKey}';",
+      );
     }
     buffer.writeln();
 
@@ -642,10 +642,10 @@ class TpRouterBuilder implements Builder {
     final sortedBranchIndices = branchesMap.keys.toList()..sort();
 
     if (route.isIndexedStack) {
-      // Generate GlobalKey for each branch
+      // Generate GlobalKey for each branch using registry
       for (int i = 0; i < sortedBranchIndices.length; i++) {
         buffer.writeln(
-          "  static final _branchKey$i = GlobalKey<NavigatorState>(debugLabel: '${route.navigatorKey}_branch_$i');",
+          "  static final _branchKey$i = TpNavigatorKeyRegistry.getOrCreate('${route.navigatorKey}_branch_$i');",
         );
       }
       buffer.writeln();
@@ -838,9 +838,10 @@ class TpRouterBuilder implements Builder {
     buffer.writeln();
 
     // Route name getter (override from TpRouteData)
-    final generatedName = route.name ?? route.routeClassName;
     buffer.writeln('  @override');
-    buffer.writeln("  String get routeName => 'tp_router_$generatedName';");
+    buffer.writeln(
+      "  String get routeName => 'tp_router_${route.routeClassName}';",
+    );
     buffer.writeln();
 
     // Static routeInfo (inline TpRouteInfo)
@@ -849,12 +850,9 @@ class TpRouterBuilder implements Builder {
     buffer.writeln("    path: '${route.path}',");
 
     // Add tp_router_ prefix to name for identification in Observer
-    if (route.name != null) {
-      buffer.writeln("    name: 'tp_router_${route.name}',");
-    } else {
-      // Use route class name as fallback
-      buffer.writeln("    name: 'tp_router_${route.routeClassName}',");
-    }
+    buffer.writeln(
+      "    name: 'tp_router_${route.routeClassName}',",
+    );
     buffer.writeln('    isInitial: ${route.isInitial},');
     // Generate parentNavigatorKey
     // Generate parentNavigatorKey
@@ -1228,7 +1226,6 @@ class _RouteData implements _BaseRouteData {
   @override
   final String routeClassName;
   final String path;
-  final String? name;
   final bool isInitial;
   final List<_ParamData> params;
   final RedirectInfo? redirect;
@@ -1250,7 +1247,6 @@ class _RouteData implements _BaseRouteData {
     required this.className,
     required this.routeClassName,
     required this.path,
-    required this.name,
     required this.isInitial,
     required this.params,
     this.redirect,

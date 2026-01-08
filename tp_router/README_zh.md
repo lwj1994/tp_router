@@ -17,6 +17,7 @@
 *   🛡️ **类型安全解析**：自动从路径 (Path)、查询参数 (Query) 或额外数据 (Extra) 中提取 `int`, `double`, `bool`, `String` 以及复杂对象。
 *   🔄 **智能重定向**：强类型的重定向机制。在导航前检查强类型参数。
 *   🐚 **Shell 路由与嵌套导航**：全面支持 `ShellRoute` 和 `StatefulShellRoute` (IndexedStack)。
+*   🗑️ **智能路由移除**：使用优雅的 **Pending Pop** 策略，命令式地移除路由（即使是后台路由）。
 *   ⚡ **简单的导航 API**：只需调用 `MyRoute().tp(context)`。
 
 ---
@@ -244,6 +245,41 @@ class DashboardShell extends StatelessWidget { ... }
 @TpRoute(path: '/dashboard/stats', parentNavigatorKey: 'dashboard')
 class StatsPage extends StatelessWidget { ... }
 ```
+
+---
+
+### 高级路由管理 (智能移除)
+
+由于 `go_router` 的声明式和基于 URL 的架构，命令式移除路由（例如：从堆栈中间移除一个页面）通常受到严格限制。
+
+TpRouter 通过智能的 **Pending Pop (延迟弹出)** 策略克服了这一限制：
+
+1.  **顶部路由**：如果路由位于栈顶，它会被立即弹出 (Pop)。
+2.  **后台路由**：它会被内部标记为“待移除”。为了不破坏 URL 的一致性，TpRouter 不会强行修改 `go_router` 堆栈，而是选择等待。
+3.  **自动跳过**：当用户最终回退导航，且被标记的路由重新显示时，TpRouter 会**自动且立即地弹出它**。
+
+这种机制在严格遵守 `go_router` 约束的同时，为用户创造了无缝的“删除”体验。
+
+**示例：**
+
+```dart
+// 1. 移除特定的路由实例
+// (根据路由名称和参数匹配)
+context.tpRouter.removeRoute(LoginRoute());
+
+// 2. 根据逻辑移除 (状态清理)
+// 示例：移除所有与已删除订单相关的屏幕
+final deletedCount = context.tpRouter.removeWhere((data) {
+  return data.pathParams['orderId'] == '12345';
+});
+
+// 3. 移除所有弹窗或特定模式
+context.tpRouter.removeWhere((data) {
+  return data.fullPath.contains('/dialog/');
+});
+```
+
+此功能与 `TpRouteObserver` 完全集成，确保存源清理和状态一致性。
 
 ---
 
