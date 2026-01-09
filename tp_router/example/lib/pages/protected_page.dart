@@ -1,9 +1,14 @@
+import 'package:example/routes/nav_keys.dart';
 import 'package:flutter/material.dart';
 import '../widgets/location_display.dart';
 import 'package:tp_router/tp_router.dart';
 import '../guards/auth_guard.dart';
 
-@TpRoute(path: '/protected', redirect: AuthRedirect)
+@TpRoute(
+  path: '/protected',
+  redirect: AuthRedirect,
+  parentNavigatorKey: MainHomeNavKey,
+)
 class ProtectedPage extends StatelessWidget {
   const ProtectedPage({super.key});
 

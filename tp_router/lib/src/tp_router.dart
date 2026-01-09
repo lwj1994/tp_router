@@ -210,9 +210,6 @@ class TpRouter {
 
   TpRouter._(this._goRouter, this._routes, this._observer);
 
-  /// Access the underlying [GoRouter] instance.
-  GoRouter get goRouter => _goRouter;
-
   /// Get the router configuration for MaterialApp.router().
   RouterConfig<Object> get routerConfig => _goRouter;
 
@@ -233,11 +230,7 @@ class TpRouter {
   /// - [isReplace]: If true, replaces the current route instead of pushing.
   /// - [isClearHistory]: If true, clears the navigation stack (like `go`).
   ///
-  /// **Note**: You cannot pass both [context] and [navigatorKey] at the same
-  /// time. Use [context] for context-aware navigation within the current
-  /// navigator, or use [navigatorKey] for navigating within a specific
-  /// named navigator.
-  ///
+
   /// Example:
   /// ```dart
   /// // Push a new route
@@ -254,7 +247,6 @@ class TpRouter {
   /// ```
   Future<T?> tp<T extends Object?>(
     TpRouteData route, {
-    TpNavKey? navigatorKey,
     bool isReplace = false,
     bool isClearHistory = false,
   }) {
@@ -274,27 +266,22 @@ class TpRouter {
 
   /// Pop the current route from the navigation stack.
   void pop<T extends Object?>({
-    TpNavKey? navigatorKey,
     T? result,
+    TpNavKey? navigatorKey,
+    BuildContext? context,
   }) {
-    final nav = _getNavigator(navigatorKey: navigatorKey);
+    final nav = _getNavigator(navigatorKey: navigatorKey, context: context);
     if (nav.canPop()) {
       nav.pop(result);
     }
   }
 
   /// Check if can pop the current route.
-  bool canPop({TpNavKey? navigatorKey}) =>
-      _getNavigator(navigatorKey: navigatorKey).canPop();
+  bool get canPop => _goRouter.canPop();
 
   /// Get the current location.
-  TpRouteData location({TpNavKey? navigatorKey}) {
-    if (navigatorKey == null) {
-      final fullPath = _goRouter.routerDelegate.currentConfiguration.fullPath;
-      return TpRouteData.fromPath(fullPath,
-          extra: _goRouter.routerDelegate.currentConfiguration.extra);
-    }
-    final observer = getObserver(navigatorKey: navigatorKey);
+  TpRouteData location({TpNavKey? navigatorKey, BuildContext? context}) {
+    final observer = getObserver(navigatorKey: navigatorKey, context: context);
     if (observer != null && observer.allRouteData.isNotEmpty) {
       return observer.allRouteData.values.last;
     }
@@ -308,30 +295,53 @@ class TpRouter {
   void popUntil(
     bool Function(Route<dynamic> route, TpRouteData? data) predicate, {
     TpNavKey? navigatorKey,
-  }) {
-    final nav = _getNavigator(navigatorKey: navigatorKey);
+    BuildContext? context,
+  }) async {
+    final nav = context != null
+        ? Navigator.of(context)
+        : _getNavigator(navigatorKey: navigatorKey);
     final observer = _findObserverInNavigator(nav);
-    nav.popUntil((route) {
-      final data = observer?.getRouteData(route);
-      return predicate(route, data);
-    });
+
+    if (observer == null) {
+      return;
+    }
+
+    // Iteratively check the top route and pop if predicate is not met
+    while (observer.allRoutes.isNotEmpty) {
+      final topRoute = observer.allRoutes.last;
+      final data = observer.getRouteData(topRoute);
+
+      if (predicate(topRoute, data)) {
+        return; // Predicate satisfied, stop popping
+      }
+
+      if (topRoute.isFirst) {
+        return; // Reached the first route, stop popping to avoid emptying stack
+      }
+
+      pop();
+    }
   }
 
   /// Pop until the first route in the stack.
-  void popToInitial({
+  Future<void> popToInitial({
     TpNavKey? navigatorKey,
-  }) {
-    popUntil((route, _) => route.isFirst, navigatorKey: navigatorKey);
+    BuildContext? context,
+  }) async {
+    popUntil((route, _) => route.isFirst,
+        navigatorKey: navigatorKey, context: context);
   }
 
   /// Pop until the specified route is found.
   ///
   /// Matches by [TpRouteData.routeName] and [TpRouteData.fullPath].
-  void popTo(
+  Future<void> popTo(
     TpRouteData route, {
     TpNavKey? navigatorKey,
-  }) {
-    popUntil((r, data) => data == route, navigatorKey: navigatorKey);
+    BuildContext? context,
+  }) async {
+    popUntil((r, data) => data == route,
+        navigatorKey: navigatorKey, context: context);
   }
 
   /// Remove a route from the navigation stack.
@@ -369,8 +379,10 @@ class TpRouter {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       for (final route in routesToRemove) {
         if (route.isCurrent) {
+          // If current, just pop
           pop();
         } else {
+          // If not current, mark for removal so it gets popped when revealed
           observer.markRouteForRemoval(route);
         }
       }
@@ -382,9 +394,11 @@ class TpRouter {
   /// Get the route observer for tracking navigation stack.
   TpRouteObserver? getObserver({
     TpNavKey? navigatorKey,
+    BuildContext? context,
   }) {
     return _findObserverInNavigator(_getNavigator(
       navigatorKey: navigatorKey,
+      context: context,
     ));
   }
 
@@ -393,7 +407,9 @@ class TpRouter {
   /// Logic:
   /// 1. If navigatorKey is provided and found, use it.
   /// 2. Otherwise (navigatorKey null/not found), use root.
-  NavigatorState _getNavigator({TpNavKey? navigatorKey}) {
+  NavigatorState _getNavigator(
+      {TpNavKey? navigatorKey, BuildContext? context}) {
+    if (context != null) return Navigator.of(context);
     // Try navigatorKey first
     if (navigatorKey != null) {
       final key = navigatorKey.globalKey;

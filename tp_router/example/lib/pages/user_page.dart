@@ -1,3 +1,4 @@
+import 'package:example/routes/nav_keys.dart';
 import 'package:flutter/material.dart';
 import '../widgets/location_display.dart';
 import 'package:tp_router/tp_router.dart';
@@ -15,7 +16,10 @@ import 'package:tp_router/tp_router.dart';
 /// // or type-safe:
 /// // UserRoute(id: 123, name: 'John', age: 25).tp();
 /// ```
-@TpRoute(path: '/user/:id')
+@TpRoute(
+  path: '/user/:id',
+  parentNavigatorKey: MainHomeNavKey,
+)
 class UserPage extends StatelessWidget {
   /// User ID from path parameter.
   @Path('id')

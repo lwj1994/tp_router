@@ -6,8 +6,7 @@ import 'package:tp_router/tp_router.dart';
 
 @TpRoute(
   path: '/dashboard/analytics',
-  parentNavigatorKey: MainNavKey,
-  branchIndex: 2,
+  parentNavigatorKey: MainDashBoradNavKey,
 )
 class AnalyticsPage extends StatelessWidget {
   final String? title;
@@ -34,8 +33,7 @@ class AnalyticsPage extends StatelessWidget {
                 child: Text('Back to Overview'),
               ),
               ElevatedButton(
-                onPressed: () => DashboardOverviewRoute()
-                    .tp(navigatorKey: MainDashBoradNavKey()),
+                onPressed: () => DashboardOverviewRoute().tp(),
                 child: Text('DashboardOverviewRoute'),
               ),
             ],

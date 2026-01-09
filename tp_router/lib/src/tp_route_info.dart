@@ -302,8 +302,8 @@ class TpStatefulNavigationShell extends StatelessWidget {
   int get currentIndex => _shell.currentIndex;
 
   /// Switch to a branch.
-  void goBranch(int index, {bool initialLocation = false}) {
-    _shell.goBranch(index, initialLocation: initialLocation);
+  void tp(int index, {bool popToInitial = false}) {
+    _shell.goBranch(index, initialLocation: popToInitial);
   }
 
   @override

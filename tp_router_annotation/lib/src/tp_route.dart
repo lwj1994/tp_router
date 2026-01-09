@@ -39,9 +39,6 @@ class TpRoute {
   /// The URL path for this route.
   ///
   /// Example: '/home', '/user/:id', '/settings'
-  /// The URL path for this route.
-  ///
-  /// Example: '/home', '/user/:id', '/settings'
   ///
   /// If null or empty, it will be auto-generated from the class name.
   final String? path;
@@ -89,15 +86,6 @@ class TpRoute {
   /// ```
   final Type? parentNavigatorKey;
 
-  /// Branch index when used with a StatefulShellRoute (isIndexedStack: true).
-  ///
-  /// Routes with the same `parentNavigatorKey` but different `branchIndex` will be
-  /// placed in separate branches. Routes with the same `branchIndex` will be
-  /// in the same branch (as nested routes).
-  ///
-  /// Default is 0.
-  final int branchIndex;
-
   /// Handle logic when route is exiting.
   ///
   /// Must be a implementation of `TpOnExit` (from tp_router package).
@@ -112,7 +100,6 @@ class TpRoute {
   /// Whether clicking the barrier dismisses the page.
   final bool barrierDismissible;
 
-  /// The color of the barrier (background dimming).
   /// The color of the barrier (background dimming).
   ///
   /// Example: `Color(0x80000000)` (Black 50%)
@@ -143,7 +130,6 @@ class TpRoute {
     this.transitionDuration = const Duration(milliseconds: 300),
     this.reverseTransitionDuration = const Duration(milliseconds: 300),
     this.parentNavigatorKey,
-    this.branchIndex = 0,
     this.onExit,
     this.fullscreenDialog = false,
     this.opaque = true,
@@ -206,7 +192,7 @@ abstract class TpTransitionsBuilder {
 /// The shell widget receives a `child` parameter.
 ///
 /// ```dart
-/// @TpShellRoute(navigatorKey: 'main')
+/// @TpShellRoute(navigatorKey: MainNavKey)
 /// class MainShell extends StatelessWidget {
 ///   final Widget child;
 ///   const MainShell({required this.child, super.key});
@@ -220,7 +206,7 @@ abstract class TpTransitionsBuilder {
 ///   }
 /// }
 ///
-/// @TpRoute(path: '/home', navigatorKey: 'main')
+/// @TpRoute(path: '/home', parentNavigatorKey: MainNavKey)
 /// class HomePage extends StatelessWidget { ... }
 /// ```
 ///
@@ -228,11 +214,15 @@ abstract class TpTransitionsBuilder {
 ///
 /// For bottom navigation bars where each tab maintains its own navigation
 /// state. The shell widget receives a `navigationShell` parameter of type
-/// [TpStatefulNavigationShell]. Use `branchIndex` on child routes to specify
-/// which branch they belong to.
+/// [TpStatefulNavigationShell]. Use `parentNavigatorKey` with branch-specific
+/// Keys (defined in `branchKeys` of the shell) to place routes in specific branches.
 ///
 /// ```dart
-/// @TpShellRoute(navigatorKey: 'main', isIndexedStack: true)
+/// @TpShellRoute(
+///   navigatorKey: MainNavKey,
+///   isIndexedStack: true,
+///   branchKeys: [HomeNavKey, SettingsNavKey]
+/// )
 /// class MainShell extends StatelessWidget {
 ///   final TpStatefulNavigationShell navigationShell;
 ///   const MainShell({required this.navigationShell, super.key});
@@ -243,17 +233,17 @@ abstract class TpTransitionsBuilder {
 ///       body: navigationShell,
 ///       bottomNavigationBar: BottomNavigationBar(
 ///         currentIndex: navigationShell.currentIndex,
-///         onTap: (index) => navigationShell.goBranch(index),
+///         onTap: (index) => navigationShell.tp(index),
 ///         items: [...],
 ///       ),
 ///     );
 ///   }
 /// }
 ///
-/// @TpRoute(path: '/home', navigatorKey: 'main', branchIndex: 0)
+/// @TpRoute(path: '/home', parentNavigatorKey: HomeNavKey)
 /// class HomePage extends StatelessWidget { ... }
 ///
-/// @TpRoute(path: '/settings', navigatorKey: 'main', branchIndex: 1)
+/// @TpRoute(path: '/settings', parentNavigatorKey: SettingsNavKey)
 /// class SettingsPage extends StatelessWidget { ... }
 /// ```
 class TpShellRoute {
@@ -283,11 +273,6 @@ class TpShellRoute {
   /// shell route. Must be a subclass of [TpNavKey].
   final Type? parentNavigatorKey;
 
-  /// Branch index when used within a parent StatefulShellRoute.
-  ///
-  /// Default is 0.
-  final int branchIndex;
-
   /// Whether to use StatefulShellRoute.indexedStack.
   ///
   /// When `true`, the shell uses [TpStatefulNavigationShell] which preserves
@@ -301,7 +286,7 @@ class TpShellRoute {
   /// Example:
   /// ```dart
   /// @TpShellRoute(
-  ///   navigatorKey: 'main',
+  ///   navigatorKey: MainNavKey,
   ///   observers: [MyObserver, AnotherObserver],
   /// )
   /// ```
@@ -333,13 +318,28 @@ class TpShellRoute {
   /// any [transition] or default page settings.
   final Type? pageBuilder;
 
+  /// List of navigator keys for each branch (for IndexedStack).
+  ///
+  /// If provided, child routes can reference these keys as their [parentNavigatorKey]
+  /// to be automatically placed in the corresponding branch.
+  ///
+  /// Example:
+  /// ```dart
+  /// @TpShellRoute(
+  ///   navigatorKey: MainNavKey,
+  ///   branchKeys: [HomeNavKey, SettingsNavKey],
+  /// )
+  /// class MainShell ...
+  /// ```
+  final List<Type>? branchKeys;
+
   /// Creates a [TpShellRoute] annotation.
   const TpShellRoute({
     required this.navigatorKey,
     this.parentNavigatorKey,
-    this.branchIndex = 0,
     this.isIndexedStack = false,
     this.observers,
+    this.branchKeys,
     this.fullscreenDialog = false,
     this.opaque = false,
     this.barrierDismissible = false,

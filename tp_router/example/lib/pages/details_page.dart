@@ -10,6 +10,7 @@ import 'package:tp_router/tp_router.dart';
   transition: TpSlideTransition(),
   transitionDuration: Duration(milliseconds: 500),
   reverseTransitionDuration: Duration(milliseconds: 300),
+  parentNavigatorKey: MainHomeNavKey,
 )
 class DetailsPage extends StatelessWidget {
   final String title;

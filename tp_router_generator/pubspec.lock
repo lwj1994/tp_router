@@ -497,7 +497,7 @@ packages:
       path: "../tp_router_annotation"
       relative: true
     source: path
-    version: "0.4.1"
+    version: "0.5.0"
   typed_data:
     dependency: transitive
     description:

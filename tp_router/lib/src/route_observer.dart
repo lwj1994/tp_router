@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'route.dart';
+import 'package:tp_router/tp_router.dart';
 
 /// Navigator observer that tracks route history for stack manipulation.
 ///
@@ -66,7 +66,7 @@ class TpRouteObserver extends NavigatorObserver {
       _pendingRemovals.remove(previousRoute);
       // Schedule pop for next frame to avoid conflicting transitions
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        navigator?.pop();
+        TpRouter.instance.pop();
       });
     }
   }
@@ -81,7 +81,6 @@ class TpRouteObserver extends NavigatorObserver {
     _pendingRemovals.remove(route);
   }
 
-  @override
   @override
   void didReplace({Route? newRoute, Route? oldRoute}) {
     int index = -1;
@@ -169,11 +168,9 @@ class TpRouteObserver extends NavigatorObserver {
   }
 
   /// Try to extract TpRouteData from route settings arguments
+  /// Try to extract TpRouteData from route settings arguments
   void _tryExtractRouteData(Route route) {
-    final arguments = route.settings.arguments;
-    if (arguments is TpRouteData) {
-      _routeDataMap[route] = arguments;
-    }
+    _routeDataMap[route] = TpRouteData.fromRoute(route);
   }
 
   /// Clear all tracked routes

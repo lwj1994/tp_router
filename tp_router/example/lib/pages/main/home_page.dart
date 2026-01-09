@@ -10,8 +10,7 @@ import 'package:tp_router/tp_router.dart';
 /// ```dart
 /// TpRouter.instance.tp(HomeRoute());
 /// ```
-@TpRoute(
-    path: '/', isInitial: true, parentNavigatorKey: MainNavKey, branchIndex: 0)
+@TpRoute(path: '/', isInitial: true, parentNavigatorKey: MainHomeNavKey)
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -103,7 +102,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   // Remote pop to reset Dashboard's navigator to its initial state
                   // This demonstrates controlling a different navigator stack using its NavKey!
-                  MainDashBoradNavKey().popToInitial();
+                  context.tpRouter.popToInitial();
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

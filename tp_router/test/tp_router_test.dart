@@ -227,9 +227,9 @@ void main() {
             Row(
               children: [
                 GestureDetector(
-                    onTap: () => shell.goBranch(0), child: const Text('Btn1')),
+                    onTap: () => shell.tp(0), child: const Text('Btn1')),
                 GestureDetector(
-                    onTap: () => shell.goBranch(1), child: const Text('Btn2')),
+                    onTap: () => shell.tp(1), child: const Text('Btn2')),
               ],
             )
           ],

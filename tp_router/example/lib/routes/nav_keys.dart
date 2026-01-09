@@ -16,4 +16,3 @@ class MainSettingNavKey extends TpNavKey {
 class MainDashBoradNavKey extends TpNavKey {
   const MainDashBoradNavKey() : super('main', branch: 2);
 }
-

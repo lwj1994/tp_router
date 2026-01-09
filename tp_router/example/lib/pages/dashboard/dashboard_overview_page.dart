@@ -6,7 +6,7 @@ import 'package:tp_router/tp_router.dart';
 
 @TpRoute(
   path: '/dashboard/overview',
-  branchIndex: 2,
+  parentNavigatorKey: MainDashBoradNavKey,
 )
 class DashboardOverviewPage extends StatelessWidget {
   const DashboardOverviewPage({super.key});

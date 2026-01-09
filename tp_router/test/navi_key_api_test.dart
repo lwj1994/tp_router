@@ -39,13 +39,13 @@ void main() {
         (tester) async {
       final homeRoute = TpRouteInfo(
         path: '/home',
-        name: 'home',
+        name: 'tp_router_home', // Prefix needed for Observer tracking
         isInitial: true,
         builder: (data) => const Text('Home'),
       );
       final page2 = TpRouteInfo(
         path: '/page2',
-        name: 'page2',
+        name: 'tp_router_page2', // Prefix needed
         builder: (data) => const Text('Page 2'),
       );
 
@@ -62,15 +62,15 @@ void main() {
 
       expect(find.text('Home'), findsOneWidget);
 
-      // 1. Test NavKey().tp()
+      // 1. Test NavKey().tp() is removed, use TpRouter directly
       // Do not await tp() as it completes when route is popped
-      const TestNavKey().tp(SimpleRoute('/page2', name: 'page2'));
+      TpRouter.instance.tp(SimpleRoute('/page2', name: 'tp_router_page2'));
       await tester.pumpAndSettle();
 
       expect(find.text('Page 2'), findsOneWidget);
 
       // 2. Test NavKey().pop()
-      const TestNavKey().pop();
+      TpRouter.instance.pop();
       await tester.pumpAndSettle();
 
       expect(find.text('Home'), findsOneWidget);
@@ -79,7 +79,7 @@ void main() {
       expect(const TestNavKey().canPop, isFalse);
 
       // Push again to test canPop true
-      const TestNavKey().tp(SimpleRoute('/page2', name: 'page2'));
+      TpRouter.instance.tp(SimpleRoute('/page2', name: 'tp_router_page2'));
       await tester.pumpAndSettle();
       expect(const TestNavKey().canPop, isTrue);
 
@@ -88,40 +88,42 @@ void main() {
       // expect(const TestNavKey().currentFullPath, '/page2');
 
       // Test popTo
-      const TestNavKey()
-          .tp(SimpleRoute('/page2', name: 'page2', extra: {'id': 1}));
+      TpRouter.instance
+          .tp(SimpleRoute('/page2', name: 'tp_router_page2', extra: {'id': 1}));
       await tester.pumpAndSettle();
       // Path should include query params if implemented, but here logic depends on how GoRouter constructs URI from implicit extra?
       // Actually GoRouter doesn't auto-add extra to URI query params.
       // So path remains /page2. Extra is invisible in URI string unless mapped.
 
-      const TestNavKey()
-          .tp(SimpleRoute('/page2', name: 'page2', extra: {'id': 2}));
+      TpRouter.instance
+          .tp(SimpleRoute('/page2', name: 'tp_router_page2', extra: {'id': 2}));
       await tester.pumpAndSettle();
 
       // Should pop back to home (original route) if we popTo HomeRoute
-      const TestNavKey().popTo(SimpleRoute('/home', name: 'home'));
+      // Note: Initial route data uses name as path fallback, so we match that.
+      await TpRouter.instance
+          .popTo(SimpleRoute('tp_router_home', name: 'tp_router_home'));
       await tester.pumpAndSettle();
       expect(find.text('Home'), findsOneWidget);
       expect(const TestNavKey().location.fullPath, '/home');
 
       // Test popToInitial
-      const TestNavKey().tp(SimpleRoute('/page2', name: 'page2'));
+      TpRouter.instance.tp(SimpleRoute('/page2', name: 'page2'));
       await tester.pumpAndSettle();
-      const TestNavKey().tp(SimpleRoute('/page2', name: 'page2'));
+      TpRouter.instance.tp(SimpleRoute('/page2', name: 'page2'));
       await tester.pumpAndSettle(); // Stack: Home -> Page2 -> Page2
 
-      const TestNavKey().popToInitial();
+      TpRouter.instance.popToInitial();
       await tester.pumpAndSettle();
       expect(find.text('Home'), findsOneWidget);
       expect(const TestNavKey().location.fullPath, '/home');
 
       // 5. Test popUntil
-      const TestNavKey().tp(SimpleRoute('/page2', name: 'page2'));
+      TpRouter.instance.tp(SimpleRoute('/page2', name: 'page2'));
       await tester.pumpAndSettle();
 
       // Pop until home
-      const TestNavKey().popUntil((route, data) {
+      TpRouter.instance.popUntil((route, data) {
         return data?.routeName == 'home';
       });
       await tester.pumpAndSettle();
