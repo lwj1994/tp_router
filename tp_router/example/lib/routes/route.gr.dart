@@ -3,7 +3,6 @@
 
 import 'package:tp_router/tp_router.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter/material.dart';
 import 'package:example/guards/auth_guard.dart';
 import 'package:example/models/memory_detail.dart';
 import 'package:example/pages/dashboard/analytics_page.dart';
@@ -91,13 +90,6 @@ class AnalyticsRoute extends TpRouteData {
     'title': title,
   };
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -141,13 +133,6 @@ class DashboardOverviewRoute extends TpRouteData {
     return p;
   }
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -191,13 +176,6 @@ class ReportsRoute extends TpRouteData {
     return p;
   }
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -310,13 +288,6 @@ class DetailsRoute extends TpRouteData {
     'title': title,
   };
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -360,13 +331,6 @@ class LoginRoute extends TpRouteData {
     return p;
   }
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -410,13 +374,6 @@ class HomeRoute extends TpRouteData {
     return p;
   }
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -488,13 +445,6 @@ class SettingsRoute extends TpRouteData {
     return p;
   }
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -606,13 +556,6 @@ class MemoryDetailRoute extends TpRouteData {
     'memory': memory,
   };
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -660,13 +603,6 @@ class ProtectedRoute extends TpRouteData {
     return p;
   }
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -710,13 +646,6 @@ class RouteRemovalDemoRoute extends TpRouteData {
     return p;
   }
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -760,13 +689,6 @@ class RouteStackPageARoute extends TpRouteData {
     return p;
   }
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -810,13 +732,6 @@ class RouteStackPageBRoute extends TpRouteData {
     return p;
   }
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -860,13 +775,6 @@ class RouteStackPageCRoute extends TpRouteData {
     return p;
   }
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 
@@ -993,13 +901,6 @@ class UserRoute extends TpRouteData {
     return p;
   }
 
-  @override
-  Route<T> toRoute<T>() {
-    return MaterialPageRoute<T>(
-      settings: RouteSettings(name: routeName, arguments: this),
-      builder: (_) => routeInfo.builder(this),
-    );
-  }
 }
 
 

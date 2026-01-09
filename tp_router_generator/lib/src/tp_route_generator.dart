@@ -609,7 +609,6 @@ class TpRouterBuilder implements Builder {
     buffer.writeln();
     buffer.writeln("import 'package:tp_router/tp_router.dart';");
     buffer.writeln("import 'package:flutter/widgets.dart';");
-    buffer.writeln("import 'package:flutter/material.dart';");
 
     // Import source files
     for (final import in imports.toList()..sort()) {
@@ -1090,16 +1089,6 @@ class TpRouterBuilder implements Builder {
       buffer.writeln('  };');
       buffer.writeln();
     }
-
-    // toRoute() method for direct navigator push
-    buffer.writeln('  @override');
-    buffer.writeln('  Route<T> toRoute<T>() {');
-    buffer.writeln('    return MaterialPageRoute<T>(');
-    buffer.writeln(
-        "      settings: RouteSettings(name: routeName, arguments: this),");
-    buffer.writeln('      builder: (_) => routeInfo.builder(this),');
-    buffer.writeln('    );');
-    buffer.writeln('  }');
 
     buffer.writeln('}');
     buffer.writeln();

@@ -258,10 +258,6 @@ class TpRouter {
     bool isReplace = false,
     bool isClearHistory = false,
   }) {
-    if (navigatorKey != null) {
-      _getNavigator(navigatorKey: navigatorKey).push(route.toRoute());
-    }
-
     // Determine which GoRouter instance to use
     final targetRouter = _goRouter;
 

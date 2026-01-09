@@ -64,23 +64,6 @@ abstract class TpRouteData {
   /// The name of the route (null if not named).
   String? get routeName;
 
-  /// Converts this route data to a [Route] for direct navigator push.
-  ///
-  /// This is used when pushing to nested navigators that are not managed
-  /// by GoRouter. Generated route classes override this method.
-  ///
-  /// Example:
-  /// ```dart
-  /// final navigator = navigatorKey.globalKey.currentState!;
-  /// navigator.push(HomeRoute().toRoute());
-  /// ```
-  Route<T> toRoute<T>() {
-    throw UnimplementedError(
-      'toRoute() is not implemented for ${runtimeType}. '
-      'Use a generated route class instead of TpRouteData.fromPath() for nested navigation.',
-    );
-  }
-
   const TpRouteData();
 
   /// Creates a [TpRouteData] from a path string for navigation.
@@ -257,14 +240,6 @@ class _PathRoute extends TpRouteData {
   Object? get extra => _extra;
 
   const _PathRoute(this.fullPath, {Object? extra = const {}}) : _extra = extra;
-
-  @override
-  Route<T> toRoute<T>() {
-    throw UnimplementedError(
-      'toRoute() is not supported for TpRouteData.fromPath(). '
-      'Use a generated route class (e.g., HomeRoute()) for nested navigation.',
-    );
-  }
 
   @override
   String? get routeName => null;
