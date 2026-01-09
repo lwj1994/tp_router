@@ -6,8 +6,7 @@ import 'package:tp_router/tp_router.dart';
 
 @TpRoute(
   path: '/dashboard/overview',
-  parentNavigatorKey: DashboardNavKey,
-  isInitial: true,
+  parentNavigatorKey: MainDashBoradNavKey,
 )
 class DashboardOverviewPage extends StatelessWidget {
   const DashboardOverviewPage({super.key});
@@ -15,7 +14,7 @@ class DashboardOverviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LocationDisplay(
-      navigatorKey: DashboardNavKey(),
+      navigatorKey: MainDashBoradNavKey(),
       bottom: 100,
       child: Scaffold(
         body: Center(
@@ -26,7 +25,7 @@ class DashboardOverviewPage extends StatelessWidget {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  context.tpRouter.pop();
+                  TpRouter.instance.pop();
                 },
                 child: const Text('pop'),
               ),
@@ -34,7 +33,7 @@ class DashboardOverviewPage extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   // Navigate to reports within the same shell
-                  const ReportsRoute().tp(context);
+                  const ReportsRoute().tp();
                 },
                 child: const Text('Go to Reports'),
               ),

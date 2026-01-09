@@ -4,7 +4,10 @@ import 'package:example/routes/nav_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:tp_router/tp_router.dart';
 
-@TpRoute(path: '/dashboard/analytics', parentNavigatorKey: DashboardNavKey)
+@TpRoute(
+  path: '/dashboard/analytics',
+  parentNavigatorKey: MainDashBoradNavKey,
+)
 class AnalyticsPage extends StatelessWidget {
   final String? title;
 
@@ -13,7 +16,7 @@ class AnalyticsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LocationDisplay(
-      navigatorKey: DashboardNavKey(),
+      navigatorKey: MainDashBoradNavKey(),
       child: Scaffold(
         body: Center(
           child: Column(
@@ -26,11 +29,11 @@ class AnalyticsPage extends StatelessWidget {
               Text('Charts and graphs go here'),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () => context.tpRouter.pop(),
+                onPressed: () => TpRouter.instance.pop(),
                 child: Text('Back to Overview'),
               ),
               ElevatedButton(
-                onPressed: () => DashboardOverviewRoute().tp(context),
+                onPressed: () => DashboardOverviewRoute().tp(),
                 child: Text('DashboardOverviewRoute'),
               ),
             ],

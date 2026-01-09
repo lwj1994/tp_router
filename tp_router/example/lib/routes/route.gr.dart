@@ -6,7 +6,6 @@ import 'package:example/guards/auth_guard.dart';
 import 'package:example/models/memory_detail.dart';
 import 'package:example/pages/dashboard/analytics_page.dart';
 import 'package:example/pages/dashboard/dashboard_overview_page.dart';
-import 'package:example/pages/dashboard/dashboard_shell.dart';
 import 'package:example/pages/dashboard/reports_page.dart';
 import 'package:example/pages/details_page.dart';
 import 'package:example/pages/login_page.dart';
@@ -23,7 +22,7 @@ import 'package:example/routes/nav_keys.dart';
 ///
 /// Usage:
 /// ```dart
-/// AnalyticsRoute().tp(context);
+/// AnalyticsRoute().tp();
 /// ```
 class AnalyticsRoute extends TpRouteData {
   final String? title;
@@ -42,11 +41,12 @@ class AnalyticsRoute extends TpRouteData {
     if (data is AnalyticsRoute) return data;
     final settings = data;
     final title = (() {
-      final extraValue = settings.extra?['title'];
-      if (extraValue is String) {
-        return extraValue;
+      // Try getting from extra/map first via operator []
+      final val = settings['title'];
+      if (val is String) {
+        return val;
       }
-      return settings.pathParams['title'] ?? settings.queryParams['title'];
+      return null;
     })();
     return AnalyticsRoute(title: title);
   }
@@ -67,11 +67,12 @@ class AnalyticsRoute extends TpRouteData {
     ],
     builder: (settings) {
       final title = (() {
-        final extraValue = settings.extra?['title'];
-        if (extraValue is String) {
-          return extraValue;
+        // Try getting from extra/map first via operator []
+        final val = settings['title'];
+        if (val is String) {
+          return val;
         }
-        return settings.pathParams['title'] ?? settings.queryParams['title'];
+        return null;
       })();
       return AnalyticsPage(title: title);
     },
@@ -93,7 +94,7 @@ class AnalyticsRoute extends TpRouteData {
 ///
 /// Usage:
 /// ```dart
-/// DashboardOverviewRoute().tp(context);
+/// DashboardOverviewRoute().tp();
 /// ```
 class DashboardOverviewRoute extends TpRouteData {
   const DashboardOverviewRoute();
@@ -114,7 +115,7 @@ class DashboardOverviewRoute extends TpRouteData {
   static final TpRouteInfo routeInfo = TpRouteInfo(
     path: '/dashboard/overview',
     name: 'tp_router_DashboardOverviewRoute',
-    isInitial: true,
+    isInitial: false,
     params: [],
     builder: (settings) {
       return DashboardOverviewPage();
@@ -128,29 +129,11 @@ class DashboardOverviewRoute extends TpRouteData {
   }
 }
 
-class DashboardShellRoute {
-  static final navigatorGlobalKey = const DashboardNavKey().globalKey;
-  static const navigatorKey = DashboardNavKey();
-
-  static final TpShellRouteInfo routeInfo = TpShellRouteInfo(
-    builder: (context, child) => DashboardShell(child: child),
-    navigatorKey: navigatorGlobalKey,
-    routes: [
-      AnalyticsRoute.routeInfo,
-      DashboardOverviewRoute.routeInfo,
-      ReportsRoute.routeInfo,
-    ],
-    observers: [
-      DashboardObserver(),
-    ],
-  );
-}
-
 /// Route class for [ReportsPage].
 ///
 /// Usage:
 /// ```dart
-/// ReportsRoute().tp(context);
+/// ReportsRoute().tp();
 /// ```
 class ReportsRoute extends TpRouteData {
   const ReportsRoute();
@@ -189,7 +172,7 @@ class ReportsRoute extends TpRouteData {
 ///
 /// Usage:
 /// ```dart
-/// DetailsRoute().tp(context);
+/// DetailsRoute().tp();
 /// ```
 class DetailsRoute extends TpRouteData {
   final String title;
@@ -210,11 +193,12 @@ class DetailsRoute extends TpRouteData {
     if (data is DetailsRoute) return data;
     final settings = data;
     final title = (() {
-      final extraValue = settings.extra?['title'];
-      if (extraValue is String) {
-        return extraValue;
+      // Try getting from extra/map first via operator []
+      final val = settings['title'];
+      if (val is String) {
+        return val;
       }
-      return settings.pathParams['title'] ?? settings.queryParams['title'];
+      return null;
     })();
     final level = (() {
       final raw = settings.queryParams['level'];
@@ -253,11 +237,12 @@ class DetailsRoute extends TpRouteData {
     ],
     builder: (settings) {
       final title = (() {
-        final extraValue = settings.extra?['title'];
-        if (extraValue is String) {
-          return extraValue;
+        // Try getting from extra/map first via operator []
+        final val = settings['title'];
+        if (val is String) {
+          return val;
         }
-        return settings.pathParams['title'] ?? settings.queryParams['title'];
+        return null;
       })();
       final level = (() {
         final raw = settings.queryParams['level'];
@@ -296,7 +281,7 @@ class DetailsRoute extends TpRouteData {
 ///
 /// Usage:
 /// ```dart
-/// LoginRoute().tp(context);
+/// LoginRoute().tp();
 /// ```
 class LoginRoute extends TpRouteData {
   const LoginRoute();
@@ -335,7 +320,7 @@ class LoginRoute extends TpRouteData {
 ///
 /// Usage:
 /// ```dart
-/// HomeRoute().tp(context);
+/// HomeRoute().tp();
 /// ```
 class HomeRoute extends TpRouteData {
   const HomeRoute();
@@ -371,34 +356,35 @@ class HomeRoute extends TpRouteData {
 }
 
 class MainShellRoute {
-  static const navigatorKey = MainNavKey();
-  static final _branchKey0 = TpNavigatorKeyRegistry.getOrCreate(
-      TpNavKey.value(navigatorKey.key, branch: 0));
-  static final _branchKey1 = TpNavigatorKeyRegistry.getOrCreate(
-      TpNavKey.value(navigatorKey.key, branch: 1));
-  static final _branchKey2 = TpNavigatorKeyRegistry.getOrCreate(
-      TpNavKey.value(navigatorKey.key, branch: 2));
+  static final navigatorKey = MainNavKey();
 
   static final TpStatefulShellRouteInfo routeInfo = TpStatefulShellRouteInfo(
     builder: (context, navigationShell) =>
         MainShellPage(navigationShell: navigationShell),
     branches: [
       [
+        DetailsRoute.routeInfo,
+        LoginRoute.routeInfo,
         HomeRoute.routeInfo,
+        ProtectedRoute.routeInfo,
+        UserRoute.routeInfo,
       ],
       [
         SettingsRoute.routeInfo,
       ],
       [
-        DashboardShellRoute.routeInfo,
+        AnalyticsRoute.routeInfo,
+        DashboardOverviewRoute.routeInfo,
+        ReportsRoute.routeInfo,
       ],
     ],
     branchNavigatorKeys: [
-      _branchKey0,
-      _branchKey1,
-      _branchKey2,
+      MainHomeNavKey(),
+      MainSettingNavKey(),
+      MainDashBoradNavKey(),
     ],
     observersBuilder: () => [
+      TpRouteObserver(),
       AObserver(),
     ],
   );
@@ -408,7 +394,7 @@ class MainShellRoute {
 ///
 /// Usage:
 /// ```dart
-/// SettingsRoute().tp(context);
+/// SettingsRoute().tp();
 /// ```
 class SettingsRoute extends TpRouteData {
   const SettingsRoute();
@@ -447,7 +433,7 @@ class SettingsRoute extends TpRouteData {
 ///
 /// Usage:
 /// ```dart
-/// MemoryDetailRoute(memory2: value).tp(context);
+/// MemoryDetailRoute(memory2: value).tp();
 /// ```
 class MemoryDetailRoute extends TpRouteData {
   final MemoryDetail memory2;
@@ -469,23 +455,25 @@ class MemoryDetailRoute extends TpRouteData {
     if (data is MemoryDetailRoute) return data;
     final settings = data;
     final memory2 = (() {
-      final extra = settings.extra;
-      if (extra.containsKey('memory2')) {
-        return extra['memory2'] as MemoryDetail;
-      }
-      if (extra is MemoryDetail) {
-        return extra;
-      }
+      // Try getting from map first
+      final val = settings['memory2'];
+      if (val is MemoryDetail) return val;
+
+      // Try casting the whole extra object
+      final asType = settings.getExtraAs<MemoryDetail>();
+      if (asType != null) return asType;
+
       throw ArgumentError('Missing required parameter: memory2');
     })();
     final memory = (() {
-      final extra = settings.extra;
-      if (extra.containsKey('memory')) {
-        return extra['memory'] as MemoryDetail;
-      }
-      if (extra is MemoryDetail) {
-        return extra;
-      }
+      // Try getting from map first
+      final val = settings['memory'];
+      if (val is MemoryDetail) return val;
+
+      // Try casting the whole extra object
+      final asType = settings.getExtraAs<MemoryDetail>();
+      if (asType != null) return asType;
+
       return null;
     })();
     return MemoryDetailRoute(
@@ -517,23 +505,25 @@ class MemoryDetailRoute extends TpRouteData {
     ],
     builder: (settings) {
       final memory2 = (() {
-        final extra = settings.extra;
-        if (extra.containsKey('memory2')) {
-          return extra['memory2'] as MemoryDetail;
-        }
-        if (extra is MemoryDetail) {
-          return extra;
-        }
+        // Try getting from map first
+        final val = settings['memory2'];
+        if (val is MemoryDetail) return val;
+
+        // Try casting the whole extra object
+        final asType = settings.getExtraAs<MemoryDetail>();
+        if (asType != null) return asType;
+
         throw ArgumentError('Missing required parameter: memory2');
       })();
       final memory = (() {
-        final extra = settings.extra;
-        if (extra.containsKey('memory')) {
-          return extra['memory'] as MemoryDetail;
-        }
-        if (extra is MemoryDetail) {
-          return extra;
-        }
+        // Try getting from map first
+        final val = settings['memory'];
+        if (val is MemoryDetail) return val;
+
+        // Try casting the whole extra object
+        final asType = settings.getExtraAs<MemoryDetail>();
+        if (asType != null) return asType;
+
         return null;
       })();
       return MemoryDetailPage(
@@ -560,7 +550,7 @@ class MemoryDetailRoute extends TpRouteData {
 ///
 /// Usage:
 /// ```dart
-/// ProtectedRoute().tp(context);
+/// ProtectedRoute().tp();
 /// ```
 class ProtectedRoute extends TpRouteData {
   const ProtectedRoute();
@@ -603,7 +593,7 @@ class ProtectedRoute extends TpRouteData {
 ///
 /// Usage:
 /// ```dart
-/// RouteRemovalDemoRoute().tp(context);
+/// RouteRemovalDemoRoute().tp();
 /// ```
 class RouteRemovalDemoRoute extends TpRouteData {
   const RouteRemovalDemoRoute();
@@ -642,7 +632,7 @@ class RouteRemovalDemoRoute extends TpRouteData {
 ///
 /// Usage:
 /// ```dart
-/// RouteStackPageARoute().tp(context);
+/// RouteStackPageARoute().tp();
 /// ```
 class RouteStackPageARoute extends TpRouteData {
   const RouteStackPageARoute();
@@ -681,7 +671,7 @@ class RouteStackPageARoute extends TpRouteData {
 ///
 /// Usage:
 /// ```dart
-/// RouteStackPageBRoute().tp(context);
+/// RouteStackPageBRoute().tp();
 /// ```
 class RouteStackPageBRoute extends TpRouteData {
   const RouteStackPageBRoute();
@@ -720,7 +710,7 @@ class RouteStackPageBRoute extends TpRouteData {
 ///
 /// Usage:
 /// ```dart
-/// RouteStackPageCRoute().tp(context);
+/// RouteStackPageCRoute().tp();
 /// ```
 class RouteStackPageCRoute extends TpRouteData {
   const RouteStackPageCRoute();
@@ -759,7 +749,7 @@ class RouteStackPageCRoute extends TpRouteData {
 ///
 /// Usage:
 /// ```dart
-/// UserRoute(id: 123).tp(context);
+/// UserRoute(id: 123).tp();
 /// ```
 class UserRoute extends TpRouteData {
   final int id;
@@ -882,14 +872,10 @@ class UserRoute extends TpRouteData {
 /// final router = TpRouter(routes: tpRoutes);
 /// ```
 List<TpRouteBase> get tpRoutes => [
-      DetailsRoute.routeInfo,
-      LoginRoute.routeInfo,
       MainShellRoute.routeInfo,
       MemoryDetailRoute.routeInfo,
-      ProtectedRoute.routeInfo,
       RouteRemovalDemoRoute.routeInfo,
       RouteStackPageARoute.routeInfo,
       RouteStackPageBRoute.routeInfo,
       RouteStackPageCRoute.routeInfo,
-      UserRoute.routeInfo,
     ];

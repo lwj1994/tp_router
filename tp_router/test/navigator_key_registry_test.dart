@@ -141,7 +141,7 @@ void main() {
 
       // Now remove B from the stack
       final context = tester.element(find.text('Page C'));
-      final removed = context.tpRouter.removeRoute(const _MockPageBRoute());
+      final removed = TpRouter.instance.removeRoute(const _MockPageBRoute());
 
       expect(removed, isTrue);
 
@@ -167,7 +167,7 @@ void main() {
 
       // Try to remove B which is not in the stack
       final context = tester.element(find.text('Page A'));
-      final removed = context.tpRouter.removeRoute(const _MockPageBRoute());
+      final removed = TpRouter.instance.removeRoute(const _MockPageBRoute());
 
       expect(removed, isFalse);
     });
@@ -192,7 +192,7 @@ void main() {
 
       // Remove all routes containing 'page-a' or 'page-b' in their path
       final context = tester.element(find.text('Page C'));
-      final count = context.tpRouter.removeWhere(
+      final count = TpRouter.instance.removeWhere(
         (data) =>
             data.fullPath.contains('page-a') ||
             data.fullPath.contains('page-b'),

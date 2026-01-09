@@ -1,3 +1,9 @@
+## 0.5.0
+* **Breaking Change**: Removed `goBranch` method. Renamed to `tp(index)` in `TpStatefulNavigationShell`.
+* **Breaking Change**: `TpRouter.tp()` no longer accepts `navigatorKey` or `context`. Use `NavKey` for route definition/linking only.
+* **Feature**: Added `pop()` and `canPop` methods to `TpNavKey` (and subclasses) for convenient popping of specific navigators from anywhere.
+* **Refactor**: Simplified route definition by removing `branchIndex` parameter (inferred automatically).
+
 ## 0.4.1
 
 *   **Fix**: Improved `didReplace` logic in `TpRouteObserver` to correctly handle route replacements and maintain proper synchronization with the internal route list.

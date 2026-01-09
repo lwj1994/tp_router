@@ -53,7 +53,7 @@ abstract class TpRouteData {
   Map<String, String> get queryParams => const {};
 
   /// Extra data passed to the route.
-  dynamic get extra => null;
+  Object? get extra => null;
 
   /// Error associated with this route, if any.
   Object? get error => null;
@@ -77,6 +77,27 @@ abstract class TpRouteData {
     return _PathRoute(path, extra: extra);
   }
 
+  factory TpRouteData.fromRoute(Route route) {
+    // 1. Try to recover from arguments (TpRouter usually puts data there)
+    final args = route.settings.arguments;
+    if (args is TpRouteData) {
+      return args;
+    }
+
+    // 2. Fallback: Parse from settings
+    final name = route.settings.name ?? '';
+    final uri = Uri.tryParse(name) ?? Uri();
+
+    return _ContextRouteData(
+      fullPath: name,
+      routeName: name,
+      pathParams: const {}, // Cannot recover path params from raw Route without matching
+      queryParams: uri.queryParameters,
+      extra: args, // Assuming extra is Map if generic
+      pageKey: null,
+    );
+  }
+
   /// Gets the current route data from the given [context].
   ///
   /// Example:
@@ -85,7 +106,16 @@ abstract class TpRouteData {
   /// final userId = data.getInt('id');
   /// ```
   static TpRouteData of(BuildContext context) {
-    return context.tpRouteData;
+    final state = GoRouterState.of(context);
+    final extraData = state.extra;
+    return _ContextRouteData(
+      fullPath: state.uri.toString(),
+      routeName: state.name ?? state.uri.toString(),
+      pathParams: state.pathParameters,
+      queryParams: state.uri.queryParameters,
+      pageKey: state.pageKey,
+      extra: extraData,
+    );
   }
 
   /// Navigate to this route.
@@ -111,18 +141,14 @@ abstract class TpRouteData {
   /// // Wait for result
   /// final result = await SelectRoute().tp<String>(context);
   /// ```
-  Future<T?>? tp<T extends Object?>(
-    BuildContext? context, {
+  Future<T?> tp<T extends Object?>({
     bool clearHistory = false,
     bool replacement = false,
-    TpNavKey? navigatorKey,
   }) {
     return TpRouter.instance.tp<T>(
       this,
-      context: context,
       isReplace: replacement,
       isClearHistory: clearHistory,
-      navigatorKey: navigatorKey,
     );
   }
 
@@ -193,8 +219,8 @@ abstract class TpRouteData {
   /// Get a typed value from extra data by key.
   T? getExtra<T>(String key) {
     final e = extra;
-    if (e.containsKey(key)) {
-      return e[key] as T?;
+    if (e is Map<String, T>) {
+      return e[key];
     }
     return null;
   }
@@ -209,8 +235,9 @@ abstract class TpRouteData {
   }
 
   /// Access any parameter by key (path > query > extra).
-  dynamic operator [](String key) {
-    return pathParams[key] ?? queryParams[key] ?? extra[key];
+  Object? operator [](String key) {
+    final e = extra;
+    return pathParams[key] ?? queryParams[key] ?? (e is Map ? e[key] : null);
   }
 
   static bool? _parseBool(String value) {
@@ -272,10 +299,10 @@ class _ContextRouteData extends TpRouteData {
   @override
   final LocalKey? pageKey;
 
-  final Map<String, dynamic> _extra;
+  final Object? _extra;
 
   @override
-  Map<String, dynamic> get extra => _extra;
+  Object? get extra => _extra;
 
   const _ContextRouteData({
     required this.fullPath,
@@ -283,7 +310,7 @@ class _ContextRouteData extends TpRouteData {
     required this.pathParams,
     required this.queryParams,
     this.pageKey,
-    required Map<String, dynamic> extra,
+    Object? extra,
   }) : _extra = extra;
 }
 

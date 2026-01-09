@@ -210,7 +210,6 @@ class TpRouterBuilder implements Builder {
         parentNavigatorKey = parentType.element!.name;
       }
     }
-    final branchIndex = annotation.peek('branchIndex')?.intValue ?? 0;
 
     final extraImports = <String>{};
 
@@ -271,7 +270,6 @@ class TpRouterBuilder implements Builder {
         'reverseTransitionDuration',
       ),
       parentNavigatorKey: parentNavigatorKey,
-      branchIndex: branchIndex,
       onExit: onExit,
       fullscreenDialog: fullscreenDialog,
       opaque: opaque,
@@ -422,7 +420,6 @@ class TpRouterBuilder implements Builder {
       }
     }
 
-    final branchIndex = annotation.peek('branchIndex')?.intValue ?? 0;
     final isIndexedStack = annotation.read('isIndexedStack').boolValue;
 
     // Extract observers
@@ -435,6 +432,22 @@ class TpRouterBuilder implements Builder {
         if (type != null && type.element != null) {
           observers.add(type.element!.name!);
           if (type.element!.library != null) {
+            extraImports.add(type.element!.library!.identifier);
+          }
+        }
+      }
+    }
+
+    // Extract branchKeys
+    final branchKeys = <String>[];
+    final branchKeysReader = annotation.peek('branchKeys');
+    if (branchKeysReader != null) {
+      final list = branchKeysReader.listValue;
+      for (final item in list) {
+        final type = item.toTypeValue();
+        if (type != null && type.element != null) {
+          branchKeys.add(type.element!.name!);
+          if (type.element!.library?.identifier != null) {
             extraImports.add(type.element!.library!.identifier);
           }
         }
@@ -468,7 +481,6 @@ class TpRouterBuilder implements Builder {
       routeClassName: routeClassName,
       navigatorKey: navigatorKeyClassName,
       parentNavigatorKey: parentNavigatorKey,
-      branchIndex: branchIndex,
       isIndexedStack: isIndexedStack,
       observers: observers,
       extraImports: extraImports,
@@ -480,6 +492,7 @@ class TpRouterBuilder implements Builder {
       maintainState: maintainState,
       pageBuilder: pageBuilder,
       pageType: _extractPageType(annotation),
+      branchKeys: branchKeys,
     );
   }
 
@@ -658,15 +671,27 @@ class TpRouterBuilder implements Builder {
   /// Groups child routes by navigatorKey and branchIndex.
   Map<int, List<_BaseRouteData>> _groupChildRoutesByBranch(
     String navigatorKey,
-    List<_BaseRouteData> allRoutes,
-  ) {
+    List<_BaseRouteData> allRoutes, {
+    List<String> branchKeys = const [],
+  }) {
     final branches = <int, List<_BaseRouteData>>{};
     for (final route in allRoutes) {
-      if (route is _RouteData && route.parentNavigatorKey == navigatorKey) {
-        branches.putIfAbsent(route.branchIndex, () => []).add(route);
-      } else if (route is _ShellRouteData &&
-          route.parentNavigatorKey == navigatorKey) {
-        branches.putIfAbsent(route.branchIndex, () => []).add(route);
+      if (route is _RouteData) {
+        if (route.parentNavigatorKey == navigatorKey) {
+          branches.putIfAbsent(0, () => []).add(route);
+        } else if (route.parentNavigatorKey != null &&
+            branchKeys.contains(route.parentNavigatorKey)) {
+          final index = branchKeys.indexOf(route.parentNavigatorKey!);
+          branches.putIfAbsent(index, () => []).add(route);
+        }
+      } else if (route is _ShellRouteData) {
+        if (route.parentNavigatorKey == navigatorKey) {
+          branches.putIfAbsent(0, () => []).add(route);
+        } else if (route.parentNavigatorKey != null &&
+            branchKeys.contains(route.parentNavigatorKey)) {
+          final index = branchKeys.indexOf(route.parentNavigatorKey!);
+          branches.putIfAbsent(index, () => []).add(route);
+        }
       }
     }
     return branches;
@@ -694,19 +719,22 @@ class TpRouterBuilder implements Builder {
     final branchesMap = _groupChildRoutesByBranch(
       route.navigatorKey,
       allRoutes,
+      branchKeys: route.branchKeys,
     );
     final sortedBranchIndices = branchesMap.keys.toList()..sort();
 
     if (route.isIndexedStack) {
       // Generate static navigatorKey instance for reference
-      buffer.writeln('  static const navigatorKey = ${route.navigatorKey}();');
+      buffer.writeln('  static final navigatorKey = ${route.navigatorKey}();');
 
-      // Generate GlobalKey for each branch using registry
-      for (int i = 0; i < sortedBranchIndices.length; i++) {
-        // For indexed stacks, we create branch-specific keys using the base key
-        buffer.writeln(
-          '  static final _branchKey$i = TpNavigatorKeyRegistry.getOrCreate(TpNavKey.value(navigatorKey.key, branch: $i));',
-        );
+      // Generate TpNavKey for each branch
+      if (route.branchKeys.isEmpty) {
+        for (int i = 0; i < sortedBranchIndices.length; i++) {
+          // For indexed stacks, we create branch-specific keys using the base key
+          buffer.writeln(
+            '  static final _branchKey$i = TpNavKey.value(navigatorKey.key, branch: $i);',
+          );
+        }
       }
       buffer.writeln();
 
@@ -730,19 +758,26 @@ class TpRouterBuilder implements Builder {
       buffer.writeln('    ],');
       // Pass branch navigator keys
       buffer.write('    branchNavigatorKeys: [');
-      for (int i = 0; i < sortedBranchIndices.length; i++) {
-        buffer.write('_branchKey$i, ');
+      if (route.branchKeys.isNotEmpty) {
+        for (final key in route.branchKeys) {
+          buffer.write('$key(), ');
+        }
+      } else {
+        for (int i = 0; i < sortedBranchIndices.length; i++) {
+          buffer.write('_branchKey$i, ');
+        }
       }
       buffer.writeln('],');
 
       // Generate observersBuilder
+      buffer.writeln('    observersBuilder: () => [');
+      buffer.writeln('      TpRouteObserver(),'); // Always add TpRouteObserver
       if (route.observers.isNotEmpty) {
-        buffer.writeln('    observersBuilder: () => [');
         for (final observer in route.observers) {
           buffer.writeln('      $observer(),');
         }
-        buffer.writeln('    ],');
       }
+      buffer.writeln('    ],');
 
       // Generate parentNavigatorKey
       /*
@@ -788,13 +823,14 @@ class TpRouterBuilder implements Builder {
       }
       buffer.writeln('    ],');
       // Generate observers
+      buffer.writeln('    observers: [');
+      buffer.writeln('      TpRouteObserver(),'); // Always add TpRouteObserver
       if (route.observers.isNotEmpty) {
-        buffer.writeln('    observers: [');
         for (final observer in route.observers) {
           buffer.writeln('      $observer(),');
         }
-        buffer.writeln('    ],');
       }
+      buffer.writeln('    ],');
       // Generate page config
       if (route.fullscreenDialog) buffer.writeln('    fullscreenDialog: true,');
       if (route.opaque) buffer.writeln('    opaque: true,');
@@ -831,13 +867,13 @@ class TpRouterBuilder implements Builder {
     buffer.writeln('/// Usage:');
     buffer.writeln('/// ```dart');
     if (route.params.isEmpty) {
-      buffer.writeln('/// $routeClassName().tp(context);');
+      buffer.writeln('/// $routeClassName().tp();');
     } else {
       final exampleArgs = route.params
           .where((p) => p.isRequired)
           .map((p) => '${p.name}: ${_getExampleValue(p)}')
           .join(', ');
-      buffer.writeln('/// $routeClassName($exampleArgs).tp(context);');
+      buffer.writeln('/// $routeClassName($exampleArgs).tp();');
     }
     buffer.writeln('/// ```');
     buffer.writeln('class $routeClassName extends TpRouteData {');
@@ -1192,14 +1228,16 @@ ${extraCheck.isNotEmpty ? '$extraCheck\n' : ''}        final raw = $stringSource
           return _generateExtraExtraction(p);
         }
 
-        // String case: check extra (if typed String), then fallback string source
+        // String case: for extra source, settings[key] already handles all
+        // lookups internally, so no fallback needed.
         if (checkExtra) {
           return '''      final $name = (() {
-        final extraValue = settings.extra?['$urlName'];
-        if (extraValue is String) {
-          return extraValue;
+        // Try getting from extra/map first via operator []
+        final val = settings['$urlName'];
+        if (val is String) {
+          return val;
         }
-        return $stringSourceAccess ?? ${isRequired ? "(throw ArgumentError('Missing required parameter: $name'))" : "null"};
+        ${isRequired ? "throw ArgumentError('Missing required parameter: $name');" : "return null;"}
       })();''';
         }
 
@@ -1221,13 +1259,14 @@ ${extraCheck.isNotEmpty ? '$extraCheck\n' : ''}        final raw = $stringSource
     final isRequired = p.isRequired;
 
     return '''      final $name = (() {
-        final extra = settings.extra;
-        if (extra.containsKey('$urlName')) {
-          return extra['$urlName'] as $type;
-        }
-        if (extra is ${p.baseType}) {
-          return extra as $type;
-        }
+        // Try getting from map first
+        final val = settings['$urlName'];
+        if (val is $type) return val;
+
+        // Try casting the whole extra object
+        final asType = settings.getExtraAs<$type>();
+        if (asType != null) return asType;
+
         ${isRequired ? "throw ArgumentError('Missing required parameter: $name');" : "return null;"}
       })();''';
   }
@@ -1305,7 +1344,7 @@ class _RouteData implements _BaseRouteData {
   final Duration transitionDuration;
   final Duration reverseTransitionDuration;
   final String? parentNavigatorKey;
-  final int branchIndex;
+
   final String? onExit;
   final bool fullscreenDialog;
   final bool opaque;
@@ -1327,7 +1366,6 @@ class _RouteData implements _BaseRouteData {
     this.transitionDuration = const Duration(milliseconds: 300),
     this.reverseTransitionDuration = const Duration(milliseconds: 300),
     this.parentNavigatorKey,
-    this.branchIndex = 0,
     this.onExit,
     this.fullscreenDialog = false,
     this.opaque = true,
@@ -1351,7 +1389,7 @@ class _ShellRouteData implements _BaseRouteData {
   final String routeClassName;
   final String navigatorKey;
   final String? parentNavigatorKey;
-  final int branchIndex;
+
   final bool isIndexedStack;
   final List<String> observers;
 
@@ -1369,7 +1407,6 @@ class _ShellRouteData implements _BaseRouteData {
     required this.routeClassName,
     required this.navigatorKey,
     this.parentNavigatorKey,
-    this.branchIndex = 0,
     required this.isIndexedStack,
     this.observers = const [],
     this.extraImports = const {},
@@ -1381,9 +1418,11 @@ class _ShellRouteData implements _BaseRouteData {
     this.maintainState = true,
     this.pageBuilder,
     this.pageType,
+    this.branchKeys = const [],
   });
 
   final String? pageType;
+  final List<String> branchKeys;
 }
 
 /// Data for a parameter.

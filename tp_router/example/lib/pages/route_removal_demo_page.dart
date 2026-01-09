@@ -25,7 +25,7 @@ class RouteRemovalDemoPage extends StatelessWidget {
           title: const Text('Route Removal Demo'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.tpRouter.pop(),
+            onPressed: () => TpRouter.instance.pop(),
           ),
         ),
         body: Padding(
@@ -51,7 +51,7 @@ class RouteRemovalDemoPage extends StatelessWidget {
                 onPressed: () {
                   // Navigate to Page A (this demo page is already "A")
                   // So we push A-step1 first
-                  const RouteStackPageARoute().tp(context);
+                  const RouteStackPageARoute().tp();
                 },
               ),
               const Divider(height: 32),
@@ -110,7 +110,7 @@ class RouteStackPageA extends StatelessWidget {
                 icon: const Icon(Icons.arrow_forward),
                 label: const Text('Navigate to Page B'),
                 onPressed: () {
-                  const RouteStackPageBRoute().tp(context);
+                  const RouteStackPageBRoute().tp();
                 },
               ),
             ],
@@ -161,7 +161,7 @@ class RouteStackPageB extends StatelessWidget {
                 ),
                 onPressed: () async {
                   // First navigate to C
-                  await const RouteStackPageCRoute().tp(context);
+                  await const RouteStackPageCRoute().tp();
                 },
               ),
               const SizedBox(height: 16),
@@ -169,7 +169,7 @@ class RouteStackPageB extends StatelessWidget {
                 icon: const Icon(Icons.arrow_forward),
                 label: const Text('Navigate to Page C (Keep B)'),
                 onPressed: () {
-                  const RouteStackPageCRoute().tp(context);
+                  const RouteStackPageCRoute().tp();
                 },
               ),
             ],
@@ -241,7 +241,7 @@ class _RouteStackPageCState extends State<RouteStackPageC> {
                   onPressed: () {
                     // Remove Page B from the navigation stack
                     // 当前是在主路由上的。
-                    final removed = context.tpRouter.removeRoute(
+                    final removed = TpRouter.instance.removeRoute(
                       RouteStackPageBRoute(),
                     );
 
@@ -262,7 +262,7 @@ class _RouteStackPageCState extends State<RouteStackPageC> {
               OutlinedButton.icon(
                 icon: const Icon(Icons.arrow_back),
                 label: const Text('Go Back (Test the Stack)'),
-                onPressed: () => context.tpRouter.pop(),
+                onPressed: () => TpRouter.instance.pop(),
               ),
               const Divider(height: 32),
               const Text(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tp_router/src/transitions.dart';
 import 'package:tp_router_annotation/tp_router_annotation.dart';
+import 'navi_key.dart';
 import 'page_factory.dart';
 import 'route.dart';
 import 'swipe_back.dart';
@@ -213,12 +214,14 @@ class TpShellRouteInfo extends TpRouteBase {
   final List<TpRouteBase> routes;
 
   /// Optional navigator key for this shell.
-  final GlobalKey<NavigatorState>? navigatorKey;
+  /// When provided, a TpRouteObserver is automatically injected.
+  final TpNavKey? navigatorKey;
 
   /// Optional parent navigator key.
-  final GlobalKey<NavigatorState>? parentNavigatorKey;
+  final TpNavKey? parentNavigatorKey;
 
-  /// List of observers for the navigator.
+  /// Additional observers for the navigator.
+  /// Note: TpRouteObserver is automatically added when navigatorKey is set.
   final List<NavigatorObserver>? observers;
 
   /// Page configuration.
@@ -253,10 +256,16 @@ class TpShellRouteInfo extends TpRouteBase {
 
   @override
   RouteBase toGoRoute({TpRouterConfig? config}) {
+    // Auto-inject TpRouteObserver when navigatorKey is provided
+    final effectiveObservers = <NavigatorObserver>[
+      if (navigatorKey != null) navigatorKey!.observer,
+      ...?observers,
+    ];
+
     return ShellRoute(
-      navigatorKey: navigatorKey,
-      parentNavigatorKey: parentNavigatorKey,
-      observers: observers,
+      navigatorKey: navigatorKey?.globalKey,
+      parentNavigatorKey: parentNavigatorKey?.globalKey,
+      observers: effectiveObservers.isNotEmpty ? effectiveObservers : null,
       pageBuilder: (context, state, child) {
         final data = _buildRouteData(state);
         final shellChild = builder(context, child);
@@ -293,8 +302,8 @@ class TpStatefulNavigationShell extends StatelessWidget {
   int get currentIndex => _shell.currentIndex;
 
   /// Switch to a branch.
-  void goBranch(int index, {bool initialLocation = false}) {
-    _shell.goBranch(index, initialLocation: initialLocation);
+  void tp(int index, {bool popToInitial = false}) {
+    _shell.goBranch(index, initialLocation: popToInitial);
   }
 
   @override
@@ -316,10 +325,11 @@ class TpStatefulShellRouteInfo extends TpRouteBase {
   final List<List<TpRouteBase>> branches;
 
   /// Optional navigator keys for each branch.
-  final List<GlobalKey<NavigatorState>>? branchNavigatorKeys;
+  /// When provided, TpRouteObserver is automatically injected for each branch.
+  final List<TpNavKey>? branchNavigatorKeys;
 
   /// Optional parent navigator key.
-  final GlobalKey<NavigatorState>? parentNavigatorKey;
+  final TpNavKey? parentNavigatorKey;
 
   /// Page configuration.
   final bool fullscreenDialog;
@@ -329,8 +339,8 @@ class TpStatefulShellRouteInfo extends TpRouteBase {
   final String? barrierLabel;
   final bool maintainState;
 
-  /// Builder for navigator observers.
-  /// Used to create fresh observer instances for each branch.
+  /// Additional observer builder for branches.
+  /// Note: TpRouteObserver is automatically added for each branch with a key.
   final List<NavigatorObserver> Function()? observersBuilder;
 
   const TpStatefulShellRouteInfo({
@@ -357,11 +367,8 @@ class TpStatefulShellRouteInfo extends TpRouteBase {
 
   @override
   RouteBase toGoRoute({TpRouterConfig? config}) {
-    // Determine transition
-    // Determine transition
-
     return StatefulShellRoute.indexedStack(
-      parentNavigatorKey: parentNavigatorKey,
+      parentNavigatorKey: parentNavigatorKey?.globalKey,
       pageBuilder: (context, state, navigationShell) {
         final data = _buildRouteData(state);
         final shellChild =
@@ -389,13 +396,23 @@ class TpStatefulShellRouteInfo extends TpRouteBase {
       branches: branches.asMap().entries.map((entry) {
         final index = entry.key;
         final routes = entry.value;
+
+        // Get the TpNavKey for this branch if available
+        final branchKey =
+            branchNavigatorKeys != null && index < branchNavigatorKeys!.length
+                ? branchNavigatorKeys![index]
+                : null;
+
+        // Build observers list with auto-injected TpRouteObserver
+        final branchObservers = <NavigatorObserver>[
+          if (branchKey != null) branchKey.observer,
+          ...?observersBuilder?.call(),
+        ];
+
         return StatefulShellBranch(
-          navigatorKey:
-              branchNavigatorKeys != null && index < branchNavigatorKeys!.length
-                  ? branchNavigatorKeys![index]
-                  : null,
+          navigatorKey: branchKey?.globalKey,
           routes: routes.map((r) => r.toGoRoute(config: config)).toList(),
-          observers: observersBuilder?.call(),
+          observers: branchObservers.isNotEmpty ? branchObservers : null,
         );
       }).toList(),
     );

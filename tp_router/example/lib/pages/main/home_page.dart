@@ -8,10 +8,9 @@ import 'package:tp_router/tp_router.dart';
 ///
 /// Usage:
 /// ```dart
-/// context.tpRouter.tp(HomeRoute());
+/// TpRouter.instance.tp(HomeRoute());
 /// ```
-@TpRoute(
-    path: '/', isInitial: true, parentNavigatorKey: MainNavKey, branchIndex: 0)
+@TpRoute(path: '/', isInitial: true, parentNavigatorKey: MainHomeNavKey)
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -42,14 +41,14 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  const ProtectedRoute().tp(context);
+                  const ProtectedRoute().tp();
                 },
                 child: const Text('Go to Protected Page'),
               ),
               const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () {
-                  const DetailsRoute(title: 'From Home').tp(context);
+                  const DetailsRoute(title: 'From Home').tp();
                 },
                 child: const Text('Go to Details'),
               ),
@@ -57,7 +56,7 @@ class _HomePageState extends State<HomePage> {
               ElevatedButton(
                 onPressed: () {
                   // Type-safe navigation with unified tp() method
-                  UserRoute(id: 123, name: 'John', age: 25).tp(context);
+                  UserRoute(id: 123, name: 'John', age: 25).tp();
                 },
                 child: const Text('Go to User Page'),
               ),
@@ -65,7 +64,7 @@ class _HomePageState extends State<HomePage> {
               ElevatedButton(
                 onPressed: () {
                   // DetailsPage has custom slide transition (500ms enter, 300ms exit)
-                  DetailsRoute(title: 'Custom Transition Demo').tp(context);
+                  DetailsRoute(title: 'Custom Transition Demo').tp();
                 },
                 child: const Text('Go to Details (Custom Transition)'),
               ),
@@ -74,7 +73,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () async {
                   final result = await DetailsRoute(
                     title: 'Waiting for result...',
-                  ).tp<String>(context);
+                  ).tp<String>();
 
                   if (mounted) {
                     setState(() {
@@ -89,7 +88,7 @@ class _HomePageState extends State<HomePage> {
                 icon: const Icon(Icons.delete_sweep),
                 onPressed: () {
                   // Navigate to route removal demo
-                  const RouteRemovalDemoRoute().tp(context);
+                  const RouteRemovalDemoRoute().tp();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurple,
@@ -103,7 +102,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   // Remote pop to reset Dashboard's navigator to its initial state
                   // This demonstrates controlling a different navigator stack using its NavKey!
-                  DashboardNavKey().popToInitial();
+                  context.tpRouter.popToInitial();
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

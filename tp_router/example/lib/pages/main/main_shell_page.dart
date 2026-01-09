@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:tp_router/tp_router.dart';
 import 'package:example/routes/nav_keys.dart';
 
-@TpShellRoute(
-    navigatorKey: MainNavKey, isIndexedStack: true, observers: [AObserver])
+@TpShellRoute(navigatorKey: MainNavKey, isIndexedStack: true, observers: [
+  AObserver
+], branchKeys: [
+  MainHomeNavKey,
+  MainSettingNavKey,
+  MainDashBoradNavKey,
+])
 class MainShellPage extends StatelessWidget {
   final TpStatefulNavigationShell navigationShell;
 
@@ -41,12 +46,8 @@ class MainShellPage extends StatelessWidget {
   }
 
   void _onItemTapped(int index, BuildContext context) {
-    navigationShell.goBranch(
+    navigationShell.tp(
       index,
-      // A common pattern when switching branches is to support
-      // navigating to the initial location when tapping the item that is
-      // already active. This example demonstrates how to support this.
-      initialLocation: index == navigationShell.currentIndex,
     );
   }
 }

@@ -148,7 +148,7 @@ void main() {
 
       // 1. Test push (default) via TpRouteData.tp
       // MockRoute('/user/1') corresponds to userRoute with id=1
-      const MockRoute('/user/1').tp(tester.element(find.text('Home Page')));
+      const MockRoute('/user/1').tp();
       await tester.pumpAndSettle();
       expect(find.text('User 1'), findsOneWidget);
 
@@ -165,8 +165,7 @@ void main() {
       expect(find.text('User 1'), findsOneWidget);
 
       // Now replace with User 2
-      const MockRoute('/user/2')
-          .tp(tester.element(find.text('User 1')), replacement: true);
+      const MockRoute('/user/2').tp(replacement: true);
       await tester.pumpAndSettle();
       expect(find.text('User 2'), findsOneWidget);
 
@@ -181,8 +180,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Go to User 3 (clears history)
-      const MockRoute('/user/3')
-          .tp(tester.element(find.text('User 1')), clearHistory: true);
+      const MockRoute('/user/3').tp(clearHistory: true);
       await tester.pumpAndSettle();
       expect(find.text('User 3'), findsOneWidget);
     });
@@ -229,9 +227,9 @@ void main() {
             Row(
               children: [
                 GestureDetector(
-                    onTap: () => shell.goBranch(0), child: const Text('Btn1')),
+                    onTap: () => shell.tp(0), child: const Text('Btn1')),
                 GestureDetector(
-                    onTap: () => shell.goBranch(1), child: const Text('Btn2')),
+                    onTap: () => shell.tp(1), child: const Text('Btn2')),
               ],
             )
           ],

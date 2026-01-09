@@ -22,7 +22,7 @@ class HomePage extends StatelessWidget {
 }
 
 // After running build_runner, you'll get a generated HomeRoute class
-// that can be used like: HomeRoute().tp(context)
+// that can be used like: HomeRoute().tp()
 //
 // For a complete working example, see:
 // https://github.com/lwj1994/tp_router/tree/main/tp_router/example

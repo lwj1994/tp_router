@@ -4,7 +4,10 @@ import '../widgets/location_display.dart';
 import 'package:tp_router/tp_router.dart';
 import '../routes/route.gr.dart';
 
-@TpRoute(path: '/login')
+@TpRoute(
+  path: '/login',
+  parentNavigatorKey: MainHomeNavKey,
+)
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
@@ -19,7 +22,7 @@ class LoginPage extends StatelessWidget {
             onPressed: () {
               // Simulate login and go home
               // In real app, update state here
-              const HomeRoute().tp(context, replacement: true);
+              const HomeRoute().tp(replacement: true);
             },
             child: const Text('Login'),
           ),

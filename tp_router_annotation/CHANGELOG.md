@@ -1,3 +1,7 @@
+## 0.5.0
+
+*   **Breaking Change**: Removed `branchIndex` from `TpRoute` and `TpShellRoute`. Branch membership is now inferred via `parentNavigatorKey` in `branchKeys`.
+
 ## 0.4.0
 
 *   **Breaking Change**: Changed `navigatorKey` in `TpShellRoute` and `parentNavigatorKey` in `TpRoute` from `String` to `Type` to support type-safe NavKeys.

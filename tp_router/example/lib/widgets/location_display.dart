@@ -21,12 +21,13 @@ class _LocationDisplayState extends State<LocationDisplay> {
   @override
   void initState() {
     super.initState();
-    TpRouter.instance.goRouter.routerDelegate.addListener(_onRouteChanged);
+    TpRouter.instance.routerConfig.routerDelegate.addListener(_onRouteChanged);
   }
 
   @override
   void dispose() {
-    TpRouter.instance.goRouter.routerDelegate.removeListener(_onRouteChanged);
+    TpRouter.instance.routerConfig.routerDelegate
+        .removeListener(_onRouteChanged);
     super.dispose();
   }
 

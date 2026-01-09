@@ -5,7 +5,14 @@ class MainNavKey extends TpNavKey {
   const MainNavKey() : super('main');
 }
 
-/// Navigator key for the dashboard shell.
-class DashboardNavKey extends TpNavKey {
-  const DashboardNavKey() : super('dashboard');
+class MainHomeNavKey extends TpNavKey {
+  const MainHomeNavKey() : super('main', branch: 0);
+}
+
+class MainSettingNavKey extends TpNavKey {
+  const MainSettingNavKey() : super('main', branch: 1);
+}
+
+class MainDashBoradNavKey extends TpNavKey {
+  const MainDashBoradNavKey() : super('main', branch: 2);
 }

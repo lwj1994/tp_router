@@ -1,3 +1,8 @@
+## 0.5.0
+
+*   **Breaking Change**: No longer reads `branchIndex` from annotations. Branching logic now relies on `parentNavigatorKey` matching `branchKeys` definitions.
+*   **Fix**: Ensure correct branch association for child routes in indexed stacks.
+
 ## 0.4.0
 
 *   **Type-Safe NavKeys**: Updated generation logic to support `Type`-based navigator keys. Shell routes now instantiate NavKeys and reference their `key` property.
