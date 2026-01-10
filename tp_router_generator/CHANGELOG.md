@@ -1,3 +1,6 @@
+## 0.6.2
+*   **Version Bump**: Synchronize version with `tp_router` 0.6.2.
+
 ## 0.6.1
 * **Refactor**: Major internal restructuring. Split monolithic generator logic into `RouteWriter` and `RouteData` models for better maintainability and extensibility.
 

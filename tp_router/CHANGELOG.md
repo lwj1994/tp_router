@@ -1,3 +1,7 @@
+## 0.6.2
+*   **Fix**: Relaxed `getExtra<T>` type checking to support `Map<String, dynamic>` where the value matches type `T`.
+*   **Fix**: Re-added missing `go_router` dependency.
+
 ## 0.6.1
 * **Refactor**: Internal overhaul of `TpRouteData` to use `GoRouterStateData` directly, improving performance and reducing object creation.
 * **Refactor**: Split `createTpPage` configuration into `TpPageConfig` for better maintainability.

@@ -228,8 +228,11 @@ abstract class TpRouteData {
   /// Get a typed value from extra data by key.
   T? getExtra<T>(String key) {
     final e = extra;
-    if (e is Map<String, T>) {
-      return e[key];
+    if (e is Map) {
+      final value = e[key];
+      if (value is T) {
+        return value;
+      }
     }
     return null;
   }

@@ -1,3 +1,7 @@
+## 0.6.2
+
+*   **Version Bump**: Synchronize version with `tp_router` 0.6.2.
+
 ## 0.6.1
 
 *   **Version Bump**: Synchronize version with `tp_router` 0.6.1 for consistency.
