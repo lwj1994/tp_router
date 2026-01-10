@@ -1,3 +1,7 @@
+## 0.6.1
+
+*   **Version Bump**: Synchronize version with `tp_router` 0.6.1 for consistency.
+
 ## 0.5.0
 
 *   **Breaking Change**: Removed `branchIndex` from `TpRoute` and `TpShellRoute`. Branch membership is now inferred via `parentNavigatorKey` in `branchKeys`.

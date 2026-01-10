@@ -8,21 +8,9 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
   flutter: '>=3.10.0'
 
-dependency_overrides: 
-  tp_router_annotation:
-    path: ../tp_router_annotation
-  tp_router_generator:
-    path: ../tp_router_generator  
-
-dependencies:
-  flutter:
-    sdk: flutter
-  go_router: ^17.0.1
-  tp_router_annotation: ^0.5.0
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
   build_runner: ^2.4.0
-  tp_router_generator: ^0.6.0
+  tp_router_generator: ^0.6.1

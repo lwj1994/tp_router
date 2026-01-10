@@ -1,5 +1,7 @@
 # TpRouter
 
+[中文文档](README_zh.md)
+
 | Package | Version |
 |---------|---------|
 | [tp_router](https://pub.dev/packages/tp_router) | [![pub package](https://img.shields.io/pub/v/tp_router.svg)](https://pub.dev/packages/tp_router) |
