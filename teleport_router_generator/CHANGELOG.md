@@ -1,3 +1,6 @@
+## 0.7.2
+* **Sync**: Synchronize version with `teleport_router` 0.7.2.
+
 ## 0.7.1
 * **Fix**: Synchronize version with `teleport_router` 0.7.1.
 
