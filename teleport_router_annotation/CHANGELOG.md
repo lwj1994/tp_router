@@ -1,3 +1,6 @@
+## 0.7.1
+* **Sync**: Synchronize version with `teleport_router` 0.7.1.
+
 ## 0.7.0
 * **Rename**: Successfully renamed `tp_router_annotation` to `teleport_router_annotation`.
 * **Refactor**: All `Tp` prefixed annotations and classes have been updated to `Teleport`.

@@ -11,12 +11,16 @@ dependencies:
   teleport_router:
     path: ../../teleport_router
 
-
-  teleport_router_annotation:
-    path: ../../teleport_router_annotation
-
 dev_dependencies:
   build_runner: any
   teleport_router_generator:
     path: ../
+
+dependency_overrides:
+  teleport_router_annotation:
+    path: ../../teleport_router_annotation
+  teleport_router_generator:
+    path: ../
+  teleport_router:
+    path: ../../teleport_router
 

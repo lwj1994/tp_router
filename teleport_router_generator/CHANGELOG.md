@@ -1,3 +1,6 @@
+## 0.7.1
+* **Fix**: Synchronize version with `teleport_router` 0.7.1.
+
 ## 0.7.0
 * **Rename**: Rebranded to `teleport_router_generator`.
 * **Refactor**: Updated code generation logic to use `Teleport` prefixed classes and annotations.

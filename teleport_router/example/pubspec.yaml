@@ -17,7 +17,6 @@ dev_dependencies:
     sdk: flutter
   build_runner: ^2.4.0
   teleport_router_generator:
-    path: ../../teleport_router_generator
   flutter_lints: ^5.0.0
 
 dependency_overrides:
