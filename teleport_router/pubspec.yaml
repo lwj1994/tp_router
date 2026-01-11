@@ -1,6 +1,6 @@
 name: teleport_router
 description: A simplified Flutter router based on go_router with annotation support.
-version: 0.7.1
+version: 0.7.2
 homepage: https://github.com/lwj1994/teleport_router
 issue_tracker: https://github.com/lwj1994/teleport_router/issues
 

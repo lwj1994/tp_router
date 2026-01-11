@@ -1,3 +1,7 @@
+## 0.7.2
+* **Docs**: Updated documentation to explain the "Teleport" name origin and refine navigation examples.
+* **Sync**: Updated all related packages to 0.7.2 for consistency.
+
 ## 0.7.1
 * **Fix**: Resolved dependency conflicts in example projects when using path overrides.
 * **Sync**: Updated all related packages to 0.7.1 for consistency.
