@@ -1,1 +1,1 @@
-tp_router/README_zh.md
+teleport_router/README_zh.md

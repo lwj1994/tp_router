@@ -1,0 +1,5 @@
+targets:
+  $default:
+    builders:
+      teleport_router_generator:
+        enabled: true

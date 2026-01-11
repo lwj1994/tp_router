@@ -1,0 +1,24 @@
+import 'package:example/routes/nav_keys.dart';
+import 'package:flutter/material.dart';
+import '../widgets/location_display.dart';
+import 'package:teleport_router/teleport_router.dart';
+import '../guards/auth_guard.dart';
+
+@TeleportRoute(
+  path: '/protected',
+  redirect: AuthRedirect,
+  parentNavigatorKey: MainHomeNavKey,
+)
+class ProtectedPage extends StatelessWidget {
+  const ProtectedPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return LocationDisplay(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Protected Page')),
+        body: const Center(child: Text('You are logged in!')),
+      ),
+    );
+  }
+}

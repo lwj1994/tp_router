@@ -1,0 +1,26 @@
+name: teleport_router_generator_example
+description: Example demonstrating teleport_router_generator usage
+publish_to: none
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  teleport_router:
+    path: ../../teleport_router
+
+dev_dependencies:
+  build_runner: any
+  teleport_router_generator:
+    path: ../
+
+dependency_overrides:
+  teleport_router_annotation:
+    path: ../../teleport_router_annotation
+  teleport_router_generator:
+    path: ../
+  teleport_router:
+    path: ../../teleport_router
+
