@@ -1,0 +1,19 @@
+targets:
+  $default:
+    builders:
+      teleport_router_generator:teleport_router_generator:
+        enabled: true
+
+builders:
+  teleport_router_generator:
+    import: "package:teleport_router_generator/src/builder.dart"
+    builder_factories: [ "teleportRouterBuilder" ]
+    build_extensions: { ".dart": [ ".gr.dart" ] }
+    auto_apply: dependents
+    build_to: source
+    # run after freezed/json/dataforge/auto_route/chopper
+    required_inputs:
+      - ".freezed.dart"
+      - ".data.dart"
+      
+

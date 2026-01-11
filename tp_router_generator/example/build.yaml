@@ -1,5 +1,0 @@
-targets:
-  $default:
-    builders:
-      tp_router_generator:
-        enabled: true
