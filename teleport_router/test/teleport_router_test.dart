@@ -60,6 +60,19 @@ void main() {
       expect(find.text('User 42'), findsOneWidget);
     });
 
+    testWidgets('supports initialRouteData', (tester) async {
+      final router = TeleportRouter(
+        routes: [homeRoute, userRoute],
+        initialRouteData: TeleportRouteData.fromPath('/user/88'),
+      );
+      await tester.pumpWidget(MaterialApp.router(
+        routerConfig: router.routerConfig,
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('User 88'), findsOneWidget);
+    });
+
     testWidgets('supports redirect', (tester) async {
       final router = TeleportRouter(
         routes: [homeRoute, userRoute],

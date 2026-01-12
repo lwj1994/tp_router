@@ -1,4 +1,4 @@
-## 0.8.0
+## 0.8.1
 * **Sync**: Synchronize version with `teleport_router` 0.8.0.
 
 ## 0.7.2
