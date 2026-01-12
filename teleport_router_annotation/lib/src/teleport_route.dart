@@ -267,6 +267,22 @@ class TeleportShellRoute {
   /// ```
   final Type navigatorKey;
 
+  /// Base path for this shell's child routes (optional).
+  ///
+  /// When specified, child routes with relative paths (not starting with '/')
+  /// will be prefixed with this base path.
+  ///
+  /// Example:
+  /// ```dart
+  /// @TeleportShellRoute(navigatorKey: DashboardNavKey, basePath: '/dashboard')
+  /// class DashboardShell extends StatelessWidget { ... }
+  ///
+  /// @TeleportRoute(path: 'overview', parentNavigatorKey: DashboardNavKey)
+  /// // Resolved to: /dashboard/overview
+  /// class OverviewPage extends StatelessWidget { ... }
+  /// ```
+  final String? basePath;
+
   /// Optional key of the parent shell.
   ///
   /// If provided, this shell route will be nested inside the specified parent
@@ -337,6 +353,7 @@ class TeleportShellRoute {
   const TeleportShellRoute({
     required this.navigatorKey,
     this.parentNavigatorKey,
+    this.basePath,
     this.isIndexedStack = false,
     this.observers,
     this.branchKeys,

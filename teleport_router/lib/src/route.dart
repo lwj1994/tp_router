@@ -64,6 +64,17 @@ abstract class TeleportRouteData {
   /// The URI of the current route.
   Uri get uri => Uri.parse(fullPath);
 
+  /// The path pattern/template that defines this route.
+  ///
+  /// This is the original pattern defined in the route configuration,
+  /// with parameter placeholders like `:id`.
+  ///
+  /// Example: `/user/:id/profile` (pattern) vs `/user/123/profile` (actual path)
+  ///
+  /// Returns null if the route was not matched from a pattern or
+  /// if pattern information is not available.
+  String? get pathPattern => null;
+
   /// Path parameters extracted from the URL.
   Map<String, String> get pathParams => const {};
 
@@ -92,6 +103,10 @@ abstract class TeleportRouteData {
   /// context.teleportRouter.teleport(TeleportRouteData.fromPath('/home', extra: {'key': 'value'}));
   /// ```
   factory TeleportRouteData.fromPath(String path, {Object? extra = const {}}) {
+    return _PathRoute(path, extra: extra);
+  }
+
+  factory TeleportRouteData.from(String path, {Object? extra = const {}}) {
     return _PathRoute(path, extra: extra);
   }
 
@@ -339,6 +354,64 @@ extension TeleportRouteDataExtension on BuildContext {
   TeleportRouteData get teleportRouteData {
     return GoRouterStateData(GoRouterState.of(this));
   }
+
+  /// Get the breadcrumb trail of routes from root to current route.
+  ///
+  /// Returns a list of [TeleportRouteData] representing the navigation hierarchy.
+  /// The first item is the root route, and the last item is the current route.
+  ///
+  /// [limit]: Maximum number of routes to return. If null, returns all routes.
+  ///
+  /// Example:
+  /// ```dart
+  /// final breadcrumbs = context.routeBreadcrumbs(limit: 4);
+  /// // Result: [HomeRoute, DashboardRoute, SettingsRoute, ProfileRoute]
+  /// ```
+  List<TeleportRouteData>? routeBreadcrumbs({int? limit}) {
+    try {
+      final router = GoRouter.of(this);
+      final delegate = router.routerDelegate;
+      final config = delegate.currentConfiguration;
+
+      if (config.matches.isEmpty) {
+        return null;
+      }
+
+      final breadcrumbs = <TeleportRouteData>[];
+
+      // Recursively collect all GoRoute matches from the match tree
+      void collectGoRoutes(List<RouteMatchBase> matches) {
+        for (final match in matches) {
+          if (match.route is GoRoute) {
+            try {
+              final matchState = match.buildState(
+                router.routeInformationParser.configuration,
+                config,
+              );
+              breadcrumbs.add(GoRouterStateData(matchState));
+            } catch (e) {
+              // If buildState fails, skip this match
+              continue;
+            }
+          } else if (match is ShellRouteMatch) {
+            // Recursively process child matches in shell routes
+            collectGoRoutes(match.matches);
+          }
+        }
+      }
+
+      collectGoRoutes(config.matches);
+
+      // Apply limit if specified
+      if (limit != null && breadcrumbs.length > limit) {
+        return breadcrumbs.sublist(breadcrumbs.length - limit);
+      }
+
+      return breadcrumbs.isEmpty ? null : breadcrumbs;
+    } catch (e) {
+      return null;
+    }
+  }
 }
 
 /// Implementation of [TeleportRouteData] that wraps [GoRouterState].
@@ -372,4 +445,78 @@ class GoRouterStateData extends TeleportRouteData {
 
   @override
   LocalKey? get pageKey => state.pageKey;
+}
+
+/// Implementation of [TeleportRouteData] that wraps [GoRouterDelegate].
+///
+/// This is used internally to retrieve route data from the current delegate
+/// when no context is available.
+class RouteMatchListRouteData extends TeleportRouteData {
+  final GoRouterDelegate currentDelegate;
+
+  const RouteMatchListRouteData(this.currentDelegate);
+
+  RouteMatchList? get _currentConfiguration =>
+      currentDelegate.currentConfiguration;
+
+  @override
+  String? get routeName {
+    final config = _currentConfiguration;
+    if (config == null || config.matches.isEmpty) return null;
+    final route = config.matches.last.route;
+    // Only GoRoute has a name property
+    return route is GoRoute ? route.name : null;
+  }
+
+  @override
+  String get fullPath {
+    final config = _currentConfiguration;
+    if (config == null) return '/';
+    // Return the actual URI including query parameters (e.g., '/family/12/person/131?tab=info')
+    // not the path pattern (e.g., '/family/:fid/person/:pid')
+    // This matches the behavior of GoRouterStateData
+    return config.uri.toString();
+  }
+
+  @override
+  Uri get uri {
+    final config = _currentConfiguration;
+    if (config == null) return Uri.parse('/');
+    return config.uri;
+  }
+
+  @override
+  Map<String, String> get pathParams {
+    final config = _currentConfiguration;
+    if (config == null) return const {};
+    return config.pathParameters;
+  }
+
+  @override
+  Map<String, String> get queryParams {
+    return uri.queryParameters;
+  }
+
+  @override
+  Object? get extra {
+    final config = _currentConfiguration;
+    if (config == null) return null;
+    return config.extra;
+  }
+
+  @override
+  LocalKey? get pageKey {
+    final config = _currentConfiguration;
+    if (config == null || config.matches.isEmpty) return null;
+    return config.matches.last.pageKey;
+  }
+
+  @override
+  String? get pathPattern {
+    final config = _currentConfiguration;
+    if (config == null) return null;
+    // Return the path pattern from go_router's RouteMatchList
+    // e.g., '/family/:fid/person/:pid'
+    return config.fullPath;
+  }
 }

@@ -5,6 +5,59 @@ class RouteWriter {
 
   /// Generates the complete output file content.
   String generateFile(List<BaseRouteData> allRoutes, Set<String> imports) {
+    // Build a map of navigatorKey -> basePath for resolving relative paths
+    final shellBasePaths = <String, String>{};
+    for (final route in allRoutes) {
+      if (route is ShellRouteData) {
+        // If basePath is not specified, default to '/' for shells with children
+        shellBasePaths[route.navigatorKey] = route.basePath ?? '/';
+      }
+    }
+
+    // Resolve relative paths in routes
+    final resolvedRoutes = <BaseRouteData>[];
+    for (final route in allRoutes) {
+      if (route is RouteData) {
+        String resolvedPath = route.path;
+        if (!route.path.startsWith('/') && route.parentNavigatorKey != null) {
+          final basePath = shellBasePaths[route.parentNavigatorKey];
+          if (basePath != null) {
+            // Ensure basePath ends with / and path doesn't start with /
+            final cleanBasePath = basePath.endsWith('/')
+                ? basePath.substring(0, basePath.length - 1)
+                : basePath;
+            resolvedPath = '$cleanBasePath/${route.path}';
+          }
+        }
+        // Create new RouteData with resolved path
+        resolvedRoutes.add(RouteData(
+          className: route.className,
+          routeClassName: route.routeClassName,
+          path: resolvedPath,
+          originalPath: route.originalPath,
+          isInitial: route.isInitial,
+          params: route.params,
+          redirect: route.redirect,
+          transitionType: route.transitionType,
+          transitionDuration: route.transitionDuration,
+          reverseTransitionDuration: route.reverseTransitionDuration,
+          parentNavigatorKey: route.parentNavigatorKey,
+          onExit: route.onExit,
+          fullscreenDialog: route.fullscreenDialog,
+          opaque: route.opaque,
+          barrierDismissible: route.barrierDismissible,
+          barrierColor: route.barrierColor,
+          barrierLabel: route.barrierLabel,
+          maintainState: route.maintainState,
+          pageBuilder: route.pageBuilder,
+          extraImports: route.extraImports,
+          pageType: route.pageType,
+        ));
+      } else {
+        resolvedRoutes.add(route);
+      }
+    }
+
     final buffer = StringBuffer();
 
     // Header
@@ -19,12 +72,12 @@ class RouteWriter {
     }
     buffer.writeln();
 
-    // Generate Route classes
-    for (final route in allRoutes) {
+    // Generate Route classes (use resolved routes)
+    for (final route in resolvedRoutes) {
       if (route is RouteData) {
-        buffer.writeln(generateRouteClass(route, allRoutes));
+        buffer.writeln(generateRouteClass(route, resolvedRoutes));
       } else if (route is ShellRouteData) {
-        buffer.writeln(generateShellRouteClass(route, allRoutes));
+        buffer.writeln(generateShellRouteClass(route, resolvedRoutes));
       }
     }
 
@@ -40,7 +93,7 @@ class RouteWriter {
 
     // Find child routes (routes with navigatorKey) to exclude from root list
     final childRouteClassNames = <String>{};
-    for (final route in allRoutes) {
+    for (final route in resolvedRoutes) {
       if (route is RouteData && route.parentNavigatorKey != null) {
         childRouteClassNames.add(route.className);
       } else if (route is ShellRouteData && route.parentNavigatorKey != null) {
@@ -49,7 +102,7 @@ class RouteWriter {
     }
 
     // Generate root routes (shells and routes without navigatorKey)
-    for (final route in allRoutes) {
+    for (final route in resolvedRoutes) {
       if (!childRouteClassNames.contains(route.className)) {
         buffer.writeln('      ${route.routeClassName}.routeInfo,');
       }
@@ -303,11 +356,16 @@ class RouteWriter {
     buffer.writeln(
         '  static ${route.routeClassName} fromData(TeleportRouteData data) {');
     buffer.writeln('    if (data is ${route.routeClassName}) return data;');
-    buffer.writeln('    final settings = data;');
-    for (final param in route.params) {
-      buffer.writeln(generateParamExtraction(param));
+
+    // Only add settings variable if there are parameters to extract
+    if (route.params.isNotEmpty) {
+      buffer.writeln('    final settings = data;');
+      for (final param in route.params) {
+        buffer.writeln(generateParamExtraction(param));
+      }
     }
-    buffer.writeln('    return ${route.routeClassName}(');
+
+    buffer.write('    return ${route.routeClassName}(');
     final routeConstructorArgs = <String>[];
     for (final p in route.params) {
       if (p.isNamed) {
@@ -326,8 +384,16 @@ class RouteWriter {
         }
       }
     }
-    buffer.writeln('      ${routeConstructorArgs.join(',\n      ')}');
-    buffer.writeln('    );');
+
+    if (routeConstructorArgs.isEmpty) {
+      // No parameters, single line
+      buffer.writeln(');');
+    } else {
+      // Has parameters, multi-line format
+      buffer.writeln();
+      buffer.writeln('      ${routeConstructorArgs.join(',\n      ')}');
+      buffer.writeln('    );');
+    }
     buffer.writeln('  }');
 
     buffer.writeln();
@@ -484,6 +550,11 @@ class RouteWriter {
 
     buffer.writeln('    return p;');
     buffer.writeln('  }');
+    buffer.writeln();
+
+    // Path pattern getter
+    buffer.writeln('  @override');
+    buffer.writeln("  String get pathPattern => '${route.originalPath}';");
     buffer.writeln();
 
     // Extra data getter

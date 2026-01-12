@@ -7,6 +7,7 @@ void main() {
   final router = TeleportRouter(
     defaultPageType: TeleportPageType.swipeBack,
     routes: teleportRoutes,
+    enableLogging: true,
     routerNeglect: true, // Demo new parameter
   );
 

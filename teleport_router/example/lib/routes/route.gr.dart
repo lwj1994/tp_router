@@ -85,6 +85,9 @@ class AnalyticsRoute extends TeleportRouteData {
   }
 
   @override
+  String get pathPattern => '/dashboard/analytics';
+
+  @override
   Map<String, dynamic> get extra => {
         'title': title,
       };
@@ -107,7 +110,6 @@ class DashboardOverviewRoute extends TeleportRouteData {
   /// Creates a [DashboardOverviewRoute] from [TeleportRouteData].
   static DashboardOverviewRoute fromData(TeleportRouteData data) {
     if (data is DashboardOverviewRoute) return data;
-    final settings = data;
     return DashboardOverviewRoute();
   }
 
@@ -127,6 +129,9 @@ class DashboardOverviewRoute extends TeleportRouteData {
     var p = '/dashboard/overview';
     return p;
   }
+
+  @override
+  String get pathPattern => '/dashboard/overview';
 }
 
 /// Route class for [ReportsPage].
@@ -146,7 +151,6 @@ class ReportsRoute extends TeleportRouteData {
   /// Creates a [ReportsRoute] from [TeleportRouteData].
   static ReportsRoute fromData(TeleportRouteData data) {
     if (data is ReportsRoute) return data;
-    final settings = data;
     return ReportsRoute();
   }
 
@@ -166,6 +170,9 @@ class ReportsRoute extends TeleportRouteData {
     var p = '/dashboard/reports';
     return p;
   }
+
+  @override
+  String get pathPattern => '/dashboard/reports';
 }
 
 /// Route class for [DetailsPage].
@@ -272,6 +279,9 @@ class DetailsRoute extends TeleportRouteData {
   }
 
   @override
+  String get pathPattern => '/details';
+
+  @override
   Map<String, dynamic> get extra => {
         'title': title,
       };
@@ -294,7 +304,6 @@ class LoginRoute extends TeleportRouteData {
   /// Creates a [LoginRoute] from [TeleportRouteData].
   static LoginRoute fromData(TeleportRouteData data) {
     if (data is LoginRoute) return data;
-    final settings = data;
     return LoginRoute();
   }
 
@@ -314,6 +323,9 @@ class LoginRoute extends TeleportRouteData {
     var p = '/login';
     return p;
   }
+
+  @override
+  String get pathPattern => '/login';
 }
 
 /// Route class for [HomePage].
@@ -333,7 +345,6 @@ class HomeRoute extends TeleportRouteData {
   /// Creates a [HomeRoute] from [TeleportRouteData].
   static HomeRoute fromData(TeleportRouteData data) {
     if (data is HomeRoute) return data;
-    final settings = data;
     return HomeRoute();
   }
 
@@ -353,6 +364,9 @@ class HomeRoute extends TeleportRouteData {
     var p = '/';
     return p;
   }
+
+  @override
+  String get pathPattern => '/';
 }
 
 class MainShellRoute {
@@ -407,7 +421,6 @@ class SettingsRoute extends TeleportRouteData {
   /// Creates a [SettingsRoute] from [TeleportRouteData].
   static SettingsRoute fromData(TeleportRouteData data) {
     if (data is SettingsRoute) return data;
-    final settings = data;
     return SettingsRoute();
   }
 
@@ -427,6 +440,9 @@ class SettingsRoute extends TeleportRouteData {
     var p = '/settings';
     return p;
   }
+
+  @override
+  String get pathPattern => '/settings';
 }
 
 /// Route class for [MemoryDetailPage].
@@ -540,6 +556,9 @@ class MemoryDetailRoute extends TeleportRouteData {
   }
 
   @override
+  String get pathPattern => '/memory-detail';
+
+  @override
   Map<String, dynamic> get extra => {
         'memory2': memory2,
         'memory': memory,
@@ -563,7 +582,6 @@ class ProtectedRoute extends TeleportRouteData {
   /// Creates a [ProtectedRoute] from [TeleportRouteData].
   static ProtectedRoute fromData(TeleportRouteData data) {
     if (data is ProtectedRoute) return data;
-    final settings = data;
     return ProtectedRoute();
   }
 
@@ -587,6 +605,9 @@ class ProtectedRoute extends TeleportRouteData {
     var p = '/protected';
     return p;
   }
+
+  @override
+  String get pathPattern => '/protected';
 }
 
 /// Route class for [RouteRemovalDemoPage].
@@ -606,7 +627,6 @@ class RouteRemovalDemoRoute extends TeleportRouteData {
   /// Creates a [RouteRemovalDemoRoute] from [TeleportRouteData].
   static RouteRemovalDemoRoute fromData(TeleportRouteData data) {
     if (data is RouteRemovalDemoRoute) return data;
-    final settings = data;
     return RouteRemovalDemoRoute();
   }
 
@@ -626,6 +646,9 @@ class RouteRemovalDemoRoute extends TeleportRouteData {
     var p = '/route-removal-demo';
     return p;
   }
+
+  @override
+  String get pathPattern => '/route-removal-demo';
 }
 
 /// Route class for [RouteStackPageA].
@@ -645,7 +668,6 @@ class RouteStackPageARoute extends TeleportRouteData {
   /// Creates a [RouteStackPageARoute] from [TeleportRouteData].
   static RouteStackPageARoute fromData(TeleportRouteData data) {
     if (data is RouteStackPageARoute) return data;
-    final settings = data;
     return RouteStackPageARoute();
   }
 
@@ -665,6 +687,9 @@ class RouteStackPageARoute extends TeleportRouteData {
     var p = '/route-stack/a';
     return p;
   }
+
+  @override
+  String get pathPattern => '/route-stack/a';
 }
 
 /// Route class for [RouteStackPageB].
@@ -684,7 +709,6 @@ class RouteStackPageBRoute extends TeleportRouteData {
   /// Creates a [RouteStackPageBRoute] from [TeleportRouteData].
   static RouteStackPageBRoute fromData(TeleportRouteData data) {
     if (data is RouteStackPageBRoute) return data;
-    final settings = data;
     return RouteStackPageBRoute();
   }
 
@@ -704,6 +728,9 @@ class RouteStackPageBRoute extends TeleportRouteData {
     var p = '/route-stack/b';
     return p;
   }
+
+  @override
+  String get pathPattern => '/route-stack/b';
 }
 
 /// Route class for [RouteStackPageC].
@@ -723,7 +750,6 @@ class RouteStackPageCRoute extends TeleportRouteData {
   /// Creates a [RouteStackPageCRoute] from [TeleportRouteData].
   static RouteStackPageCRoute fromData(TeleportRouteData data) {
     if (data is RouteStackPageCRoute) return data;
-    final settings = data;
     return RouteStackPageCRoute();
   }
 
@@ -743,6 +769,9 @@ class RouteStackPageCRoute extends TeleportRouteData {
     var p = '/route-stack/c';
     return p;
   }
+
+  @override
+  String get pathPattern => '/route-stack/c';
 }
 
 /// Route class for [UserPage].
@@ -863,6 +892,9 @@ class UserRoute extends TeleportRouteData {
     if (queryParts.isNotEmpty) p = '$p?${queryParts.join('&')}';
     return p;
   }
+
+  @override
+  String get pathPattern => '/user/:id';
 }
 
 /// All generated routes in the application.

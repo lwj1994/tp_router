@@ -141,11 +141,11 @@ abstract class TeleportNavKey {
 
   /// Get the current location in this navigator.
   ///
-  /// This is a shortcut for [TeleportRouter.location] with `navigatorKey: this`.
+  /// This is a shortcut for [TeleportRouter.getCurrentRoute] with `navigatorKey: this`.
   ///
   /// **Note**: [TeleportRouter] must be initialized before calling this.
-  TeleportRouteData get location =>
-      TeleportRouter.instance.location(navigatorKey: this);
+  TeleportRouteData get currentRoute =>
+      TeleportRouter.instance.currentRoute(navigatorKey: this);
 }
 
 /// Private implementation for factory constructor.

@@ -169,6 +169,30 @@ class TeleportRouterBuilder implements Builder {
       path = _generateKebabCasePath(className);
     }
 
+    // Extract parentNavigatorKey early for validation
+    String? parentNavigatorKey;
+    final parentKeyReader = annotation.peek('parentNavigatorKey');
+    if (parentKeyReader != null && !parentKeyReader.isNull) {
+      final parentType = parentKeyReader.objectValue.toTypeValue();
+      if (parentType != null && parentType.element != null) {
+        parentNavigatorKey = parentType.element!.name;
+      }
+    }
+
+    // Validate path: relative paths require parentNavigatorKey
+    if (!path.startsWith('/')) {
+      if (parentNavigatorKey == null) {
+        throw InvalidGenerationSourceError(
+          'Route "$className" has a relative path "$path" but no parentNavigatorKey. '
+          'Relative paths must have a parentNavigatorKey, or use absolute path starting with "/".',
+          element: classElement,
+        );
+      }
+    }
+
+    // Store original path for pathPattern
+    final originalPath = path;
+
     final isInitial = annotation.read('isInitial').boolValue;
 
     // Analyze constructor parameters
@@ -184,16 +208,6 @@ class TeleportRouterBuilder implements Builder {
       final paramData = _analyzeParameter(param, classElement);
       if (paramData != null) {
         params.add(paramData);
-      }
-    }
-
-    // Extract parentNavigatorKey as Type (optional)
-    String? parentNavigatorKey;
-    final parentKeyReader = annotation.peek('parentNavigatorKey');
-    if (parentKeyReader != null && !parentKeyReader.isNull) {
-      final parentType = parentKeyReader.objectValue.toTypeValue();
-      if (parentType != null && parentType.element != null) {
-        parentNavigatorKey = parentType.element!.name;
       }
     }
 
@@ -246,6 +260,7 @@ class TeleportRouterBuilder implements Builder {
       className: className,
       routeClassName: routeClassName,
       path: path,
+      originalPath: originalPath,
       isInitial: isInitial,
       params: params,
       redirect: _extractRedirect(annotation),
@@ -406,6 +421,9 @@ class TeleportRouterBuilder implements Builder {
       }
     }
 
+    // Extract basePath (optional)
+    final basePath = annotation.peek('basePath')?.stringValue;
+
     final isIndexedStack = annotation.read('isIndexedStack').boolValue;
 
     // Extract observers
@@ -467,6 +485,7 @@ class TeleportRouterBuilder implements Builder {
       routeClassName: routeClassName,
       navigatorKey: navigatorKeyClassName,
       parentNavigatorKey: parentNavigatorKey,
+      basePath: basePath,
       isIndexedStack: isIndexedStack,
       observers: observers,
       extraImports: extraImports,

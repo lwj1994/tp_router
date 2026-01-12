@@ -16,8 +16,9 @@ export 'src/teleport_route_info.dart'
         TeleportOnExit,
         TeleportStatefulShellRouteInfo;
 export 'src/teleport_router.dart';
-export 'src/route.dart';
+export 'src/route.dart' show TeleportRouteData, TeleportRouteDataExtension;
 export 'src/page_factory.dart';
 export 'src/transitions.dart';
 export 'src/navi_key.dart' show TeleportNavKey;
 export 'src/context_extension.dart';
+export 'src/log_util.dart' show LogUtil;

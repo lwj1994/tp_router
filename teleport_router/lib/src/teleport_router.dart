@@ -9,6 +9,7 @@ import 'route.dart';
 import 'route_observer.dart';
 import 'teleport_route_info.dart';
 import 'page_factory.dart';
+import 'log_util.dart';
 
 /// Main router class that wraps go_router with teleport_router routes.
 ///
@@ -75,19 +76,23 @@ class TeleportRouter {
   /// [routerNeglect] Whether to ignore the browser history tracking.
   /// Defaults to false.
   ///
-  /// [initialLocation] The initial location of the router. If not provided,
+  /// [initialRoute] The initial route of the router. If not provided,
   /// it usually defaults to auto-detected initial route or `/`.
   ///
   /// [overridePlatformDefaultLocation] Whether to override the platform default
-  /// initial location. Defaults to false.
+  /// initial route. Defaults to false.
   ///
-  /// [initialExtra] The extra data to pass to the initial location.
+  /// [initialExtra] The extra data to pass to the initial route.
   ///
   /// [observers] A list of [NavigatorObserver]s to monitor navigation events.
   /// Note: [TeleportRouteObserver] is automatically added for stack manipulation support.
   ///
   /// [debugLogDiagnostics] Whether to log diagnostic info to the console.
   /// Defaults to false.
+  ///
+  /// [enableLogging] Whether to enable TeleportRouter debug logging.
+  /// When enabled, logs navigation events, route matching, and parameter extraction.
+  /// Defaults to false. Only works in debug mode.
   ///
   /// [navigatorKey] A global key for the root navigator.
   ///
@@ -111,12 +116,13 @@ class TeleportRouter {
     Listenable? refreshListenable,
     int redirectLimit = 5,
     bool routerNeglect = false,
-    String? initialLocation,
+    String? initialRoute,
     bool overridePlatformDefaultLocation = false,
     Object? initialExtra,
     TeleportRouterConfig? config,
     List<NavigatorObserver>? observers,
     bool debugLogDiagnostics = false,
+    bool enableLogging = false,
     TeleportNavKey? navigatorKey,
     String? restorationScopeId,
     bool requestFocus = true,
@@ -126,20 +132,29 @@ class TeleportRouter {
     TeleportPageType? defaultPageType,
     TeleportPageFactory? defaultPageBuilder,
   }) {
+    // Initialize logging
+    LogUtil.setEnabled(enableLogging);
+
+    LogUtil.section('TeleportRouter Initialization');
+    LogUtil.info('Registering ${routes.length} routes');
+
     // Use the provided key or fall back to the global root key
     if (navigatorKey != null) {
       TeleportNavigatorKeyRegistry.rootKey = navigatorKey;
+      LogUtil.debug('Using custom navigator key: ${navigatorKey.key}');
     }
-    // Determine initial location logic
-    // If initialLocation is provided by user, use it.
+    // Determine initial route logic
+    // If initialRoute is provided by user, use it.
     // Otherwise, try to auto-detect from routes.
-    String? startLoc = initialLocation;
+    String? startLoc = initialRoute;
 
     if (startLoc == null) {
+      LogUtil.debug('Auto-detecting initial route...');
       for (final route in routes) {
         final loc = _findInitialPath(route);
         if (loc != null) {
           startLoc = loc;
+          LogUtil.info('Found initial route: $startLoc');
           break;
         }
       }
@@ -152,6 +167,11 @@ class TeleportRouter {
         }
       }
       startLoc ??= '/';
+      if (initialRoute == null) {
+        LogUtil.info('Using default initial route: $startLoc');
+      }
+    } else {
+      LogUtil.info('Initial route set to: $startLoc');
     }
 
     // Convert TeleportRouteBase to GoRoute/ShellRoute
@@ -266,6 +286,38 @@ class TeleportRouter {
     bool isReplace = false,
     bool isClearHistory = false,
   }) {
+    // Log navigation
+    final action = isClearHistory
+        ? 'go (clear history)'
+        : isReplace
+            ? 'replace'
+            : 'push';
+    LogUtil.navigation('$action -> ${route.fullPath}');
+    if (route.routeName != null) {
+      LogUtil.route('Route name: ${route.routeName}');
+    }
+    if (route.pathParams.isNotEmpty) {
+      LogUtil.params('Path params: ${route.pathParams}');
+    }
+    if (route.queryParams.isNotEmpty) {
+      LogUtil.params('Query params: ${route.queryParams}');
+    }
+    if (route.extra != null) {
+      // Try to format extra data in a readable way
+      try {
+        if (route.extra is Map) {
+          LogUtil.params('Extra data: ${route.extra}');
+        } else if (route.extra is List) {
+          LogUtil.params('Extra data (list): ${route.extra}');
+        } else {
+          LogUtil.params(
+              'Extra data (${route.extra.runtimeType}): ${route.extra}');
+        }
+      } catch (e) {
+        LogUtil.params('Extra data: ${route.extra.runtimeType}');
+      }
+    }
+
     // Determine which GoRouter instance to use
     final targetRouter = _goRouter;
 
@@ -285,21 +337,50 @@ class TeleportRouter {
     T? result,
   }) {
     if (canPop) {
+      if (result != null) {
+        // Format result value for logging
+        try {
+          if (result is Map) {
+            LogUtil.navigation('pop with result: $result');
+          } else if (result is List) {
+            LogUtil.navigation('pop with result (list): $result');
+          } else if (result is String || result is num || result is bool) {
+            LogUtil.navigation(
+                'pop with result (${result.runtimeType}): $result');
+          } else {
+            LogUtil.navigation(
+                'pop with result (${result.runtimeType}): $result');
+          }
+        } catch (e) {
+          LogUtil.navigation('pop with result: ${result.runtimeType}');
+        }
+      } else {
+        LogUtil.navigation('pop');
+      }
       _goRouter.pop<T>(result);
+    } else {
+      LogUtil.warning('Cannot pop: already at root route');
     }
   }
 
   /// Check if can pop the current route.
   bool get canPop => _goRouter.canPop();
 
-  /// Get the current location.
-  TeleportRouteData location(
+  /// Get the current route data.
+  TeleportRouteData currentRoute(
       {TeleportNavKey? navigatorKey, BuildContext? context}) {
-    final observer = getObserver(navigatorKey: navigatorKey, context: context);
-    if (observer.allRouteData.isNotEmpty) {
-      return observer.allRouteData.values.last;
+    if (context != null) {
+      return context.teleportRouteData;
     }
-    return TeleportRouteData.fromPath('/');
+
+    if (navigatorKey != null) {
+      final list = navigatorKey.observer.allRouteData;
+      if (list.isNotEmpty) {
+        return list.values.last;
+      }
+    }
+    final GoRouterDelegate currentDelegate = _goRouter.routerDelegate;
+    return RouteMatchListRouteData(currentDelegate);
   }
 
   /// Pop routes until the predicate is satisfied.

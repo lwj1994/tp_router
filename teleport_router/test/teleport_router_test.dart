@@ -88,8 +88,8 @@ void main() {
           builder: (data) => const Text('Protected Page'),
           redirect: (context, state) async {
             // Mock auth check
-            bool authed = false;
-            if (!authed) {
+            bool authed = DateTime.now().millisecondsSinceEpoch % 2 == 0;
+            if (authed == false) {
               return const MockRoute('/login');
             }
             return null;
