@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "tp_router example",
+            "name": "teleport_router example",
             "request": "launch",
             "type": "dart",
-            "program": "tp_router/example/lib/main.dart"
+            "program": "teleport_router/example/lib/main.dart"
         }
     ]
 }

@@ -86,7 +86,7 @@ void main() {
       expect(const TestNavKey().canPop, isTrue);
 
       // 4. Test currentFullPath
-      print('Current path: ${const TestNavKey().location.fullPath}');
+      print('Current path: ${const TestNavKey().currentRoute.fullPath}');
       // expect(const TestNavKey().currentFullPath, '/page2');
 
       // Test popTo
@@ -107,7 +107,7 @@ void main() {
           SimpleRoute('teleport_router_home', name: 'teleport_router_home'));
       await tester.pumpAndSettle();
       expect(find.text('Home'), findsOneWidget);
-      expect(const TestNavKey().location.fullPath, '/home');
+      expect(const TestNavKey().currentRoute.fullPath, '/home');
 
       // Test popToInitial
       TeleportRouter.instance.teleport(SimpleRoute('/page2', name: 'page2'));
@@ -118,7 +118,7 @@ void main() {
       TeleportRouter.instance.popToInitial();
       await tester.pumpAndSettle();
       expect(find.text('Home'), findsOneWidget);
-      expect(const TestNavKey().location.fullPath, '/home');
+      expect(const TestNavKey().currentRoute.fullPath, '/home');
 
       // 5. Test popUntil
       TeleportRouter.instance.teleport(SimpleRoute('/page2', name: 'page2'));

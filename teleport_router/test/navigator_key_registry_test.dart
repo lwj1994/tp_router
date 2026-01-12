@@ -143,7 +143,6 @@ void main() {
       expect(find.text('Page C'), findsOneWidget);
 
       // Now remove B from the stack
-      final context = tester.element(find.text('Page C'));
       final removed =
           TeleportRouter.instance.removeRoute(const _MockPageBRoute());
 
@@ -170,7 +169,6 @@ void main() {
       await tester.pumpAndSettle();
 
       // Try to remove B which is not in the stack
-      final context = tester.element(find.text('Page A'));
       final removed =
           TeleportRouter.instance.removeRoute(const _MockPageBRoute());
 
@@ -196,7 +194,6 @@ void main() {
       await tester.pumpAndSettle();
 
       // Remove all routes containing 'page-a' or 'page-b' in their path
-      final context = tester.element(find.text('Page C'));
       final count = TeleportRouter.instance.removeWhere(
         (data) =>
             data.fullPath.contains('page-a') ||

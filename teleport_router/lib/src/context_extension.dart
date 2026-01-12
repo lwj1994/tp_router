@@ -36,8 +36,8 @@ class TeleportRouterContext {
     );
   }
 
-  TeleportRouteData get location {
-    return TeleportRouter.instance.location(
+  TeleportRouteData get currentRoute {
+    return TeleportRouter.instance.currentRoute(
       context: context,
     );
   }

@@ -56,6 +56,6 @@ class AObserver extends NavigatorObserver {
   @override
   void didPush(Route route, Route? previousRoute) {
     super.didPush(route, previousRoute);
-    print("AObserver${route.settings.name ?? ""}");
+    LogUtil.info("AObserver: ${route.settings.name ?? ""}");
   }
 }

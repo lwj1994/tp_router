@@ -33,6 +33,8 @@ class RouteData implements BaseRouteData {
   @override
   final String routeClassName;
   final String path;
+  final String
+      originalPath; // The original path pattern (before resolving relative paths)
   final bool isInitial;
   final List<ParamData> params;
   final RedirectInfo? redirect;
@@ -55,6 +57,7 @@ class RouteData implements BaseRouteData {
     required this.className,
     required this.routeClassName,
     required this.path,
+    required this.originalPath,
     required this.isInitial,
     required this.params,
     this.redirect,
@@ -85,6 +88,7 @@ class ShellRouteData implements BaseRouteData {
   final String routeClassName;
   final String navigatorKey;
   final String? parentNavigatorKey;
+  final String? basePath; // Base path for relative child routes
 
   final bool isIndexedStack;
   final List<String> observers;
@@ -103,6 +107,7 @@ class ShellRouteData implements BaseRouteData {
     required this.routeClassName,
     required this.navigatorKey,
     this.parentNavigatorKey,
+    this.basePath,
     required this.isIndexedStack,
     this.observers = const [],
     this.extraImports = const {},

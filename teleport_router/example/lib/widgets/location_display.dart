@@ -52,7 +52,7 @@ class _LocationDisplayState extends State<LocationDisplay> {
               child: SafeArea(
                 top: false,
                 child: Text(
-                  'Start: ${TeleportRouter.instance.location(navigatorKey: widget.navigatorKey).fullPath}',
+                  'Start: ${TeleportRouter.instance.currentRoute(navigatorKey: widget.navigatorKey).fullPath}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
