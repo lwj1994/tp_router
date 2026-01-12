@@ -1,5 +1,5 @@
-## 0.8.0
-* **API Break**: Renamed `initialLocation` to `initialRoute` in `TeleportRouter` constructor.
+## 0.8.1
+* **API Break**: Replaced `initialRoute` and `initialExtra` with `initialRouteData` (`TeleportRouteData`) in `TeleportRouter` constructor for better consistency.
 * **API Break**: Renamed `currentRoute` (getter on context/key) to return `TeleportRouteData` and updated internal naming consistency.
 * **Feature**: Added comprehensive logging system for navigation events. Enable via `enableLogging` in `TeleportRouter`.
 * **Feature**: Added `popUntil`, `popToInitial`, and `popTo` for more fine-grained navigation control.

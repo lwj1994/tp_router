@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
@@ -76,13 +77,11 @@ class TeleportRouter {
   /// [routerNeglect] Whether to ignore the browser history tracking.
   /// Defaults to false.
   ///
-  /// [initialRoute] The initial route of the router. If not provided,
+  /// [initialRouteData] The initial route of the router. If not provided,
   /// it usually defaults to auto-detected initial route or `/`.
   ///
   /// [overridePlatformDefaultLocation] Whether to override the platform default
   /// initial route. Defaults to false.
-  ///
-  /// [initialExtra] The extra data to pass to the initial route.
   ///
   /// [observers] A list of [NavigatorObserver]s to monitor navigation events.
   /// Note: [TeleportRouteObserver] is automatically added for stack manipulation support.
@@ -107,6 +106,10 @@ class TeleportRouter {
   /// [defaultTransitionDuration] Global default transition duration.
   ///
   /// [defaultReverseTransitionDuration] Global default reverse transition duration.
+  ///
+  /// [onEnter] A global callback called before any navigation.
+  ///
+  /// [extraCodec] A codec for encoding/decoding the extra data.
   factory TeleportRouter({
     required List<TeleportRouteBase> routes,
     Widget Function(BuildContext, TeleportRouteData)? errorBuilder,
@@ -116,9 +119,8 @@ class TeleportRouter {
     Listenable? refreshListenable,
     int redirectLimit = 5,
     bool routerNeglect = false,
-    String? initialRoute,
+    TeleportRouteData? initialRouteData,
     bool overridePlatformDefaultLocation = false,
-    Object? initialExtra,
     TeleportRouterConfig? config,
     List<NavigatorObserver>? observers,
     bool debugLogDiagnostics = false,
@@ -131,6 +133,8 @@ class TeleportRouter {
     Duration? defaultReverseTransitionDuration,
     TeleportPageType? defaultPageType,
     TeleportPageFactory? defaultPageBuilder,
+    OnEnter? onEnter,
+    Codec<Object?, String>? extraCodec,
   }) {
     // Initialize logging
     LogUtil.setEnabled(enableLogging);
@@ -144,9 +148,10 @@ class TeleportRouter {
       LogUtil.debug('Using custom navigator key: ${navigatorKey.key}');
     }
     // Determine initial route logic
-    // If initialRoute is provided by user, use it.
+    // If initialRouteData is provided by user, use it.
     // Otherwise, try to auto-detect from routes.
-    String? startLoc = initialRoute;
+    String? startLoc = initialRouteData?.fullPath;
+    Object? startExtra = initialRouteData?.extra;
 
     if (startLoc == null) {
       LogUtil.debug('Auto-detecting initial route...');
@@ -167,7 +172,7 @@ class TeleportRouter {
         }
       }
       startLoc ??= '/';
-      if (initialRoute == null) {
+      if (initialRouteData == null) {
         LogUtil.info('Using default initial route: $startLoc');
       }
     } else {
@@ -197,7 +202,7 @@ class TeleportRouter {
     final goRouter = GoRouter(
       routes: goRoutes,
       initialLocation: startLoc,
-      initialExtra: initialExtra,
+      initialExtra: startExtra,
       errorBuilder: errorBuilder != null
           ? (context, state) => errorBuilder(context, GoRouterStateData(state))
           : null,
@@ -218,6 +223,8 @@ class TeleportRouter {
       navigatorKey: TeleportNavigatorKeyRegistry.rootKey.globalKey,
       restorationScopeId: restorationScopeId,
       requestFocus: requestFocus,
+      onEnter: onEnter,
+      extraCodec: extraCodec,
     );
 
     _instance = TeleportRouter._(goRouter, routes);
