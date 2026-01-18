@@ -614,9 +614,6 @@ final router = TeleportRouter(
   routes: teleportRoutes,
   defaultPageType: TeleportPageType.swipeBack,
 );
-
-// Or use Cupertino-style (edge swipe only)
-defaultPageType: TeleportPageType.cupertino,
 ```
 
 ---
@@ -632,25 +629,15 @@ Control how the page is rendered:
 ```dart
 @TeleportRoute(
   path: '/settings',
-  type: TeleportPageType.cupertino, // Force iOS-style page
+  type: TeleportPageType.swipeBack, // Use swipeBack page
 )
 class SettingsPage extends StatelessWidget { ... }
 ```
 
 | Type | Description |
 |------|-------------|
-| `TeleportPageType.auto` | Platform-adaptive (default). Material on Android, Cupertino on iOS. |
-| `TeleportPageType.material` | Force `MaterialPage` (Android-style). |
-| `TeleportPageType.cupertino` | Force `CupertinoPage` (iOS-style with edge swipe). |
+| `TeleportPageType.defaultType` | The default page type (replaces 'custom'). |
 | `TeleportPageType.swipeBack` | Full-screen swipe-to-dismiss gesture. |
-| `TeleportPageType.custom` | Use with `pageBuilder` for fully custom pages. |
-
-> **Note on `TeleportPageType.auto`**:
-> *   **Android**: Uses `ZoomPageTransitionsBuilder` (Android 10+) or standard slide up/fade.
-> *   **iOS**: Uses `CupertinoPageTransition` (slide from right with swipe-back).
-> *   **macOS/Linux/Windows**: Uses `ZoomPageTransitionsBuilder` or standard fade.
->
-> This ensures your app feels native on every platform without manual configuration.
 
 ### Dialog & Modal Options
 
@@ -710,7 +697,7 @@ All available `@TeleportRoute` parameters:
   onExit: UnsavedChangesGuard,    // Exit interception (TeleportOnExit<T>)
   
   // === Page Type ===
-  type: TeleportPageType.auto,          // auto, material, cupertino, swipeBack, custom
+  type: TeleportPageType.defaultType,          // defaultType, swipeBack
   pageBuilder: MyCustomPage,      // Custom Page factory (overrides type)
   
   // === Transitions ===
@@ -747,7 +734,7 @@ class MyPage extends StatelessWidget { ... }
   observers: [MyNavigatorObserver, AnalyticsObserver], // NavigatorObservers for this shell
   
   // === Page Configuration (same as TeleportRoute) ===
-  type: TeleportPageType.material,
+  type: TeleportPageType.swipeBack,
   fullscreenDialog: false,
   opaque: true,
   barrierDismissible: false,

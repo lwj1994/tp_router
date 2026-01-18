@@ -382,21 +382,21 @@ packages:
       path: "../../teleport_router"
       relative: true
     source: path
-    version: "0.7.2"
+    version: "0.8.2"
   teleport_router_annotation:
     dependency: "direct overridden"
     description:
       path: "../../teleport_router_annotation"
       relative: true
     source: path
-    version: "0.7.2"
+    version: "0.8.2"
   teleport_router_generator:
     dependency: "direct dev"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.7.2"
+    version: "0.8.2"
   term_glyph:
     dependency: transitive
     description:

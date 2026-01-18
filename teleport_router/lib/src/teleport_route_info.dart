@@ -289,9 +289,7 @@ class TeleportStatefulNavigationShell extends StatelessWidget {
 
 /// Function type for building a stateful shell widget (uses navigationShell).
 typedef TeleportStatefulShellBuilder = Widget Function(
-  BuildContext context,
-  TeleportStatefulNavigationShell navigationShell,
-);
+    BuildContext context, TeleportStatefulNavigationShell navigationShell);
 
 /// A shell route that maintains state for its branches (StatefulShellRoute).
 ///
@@ -366,8 +364,10 @@ class TeleportStatefulShellRouteInfo extends TeleportRouteBase {
       parentNavigatorKey: parentNavigatorKey?.globalKey,
       pageBuilder: (context, state, navigationShell) {
         final data = _buildRouteData(state);
-        final shellChild = builder(context,
-            TeleportStatefulNavigationShell(navigationShell, branches.length));
+        final shellChild = builder(
+          context,
+          TeleportStatefulNavigationShell(navigationShell, branches.length),
+        );
 
         return _createTeleportPage(
           context: context,
@@ -502,69 +502,37 @@ Page<dynamic> _createTeleportPage({
   }
 
   // Determine effective page type
-  var effectiveType =
-      pageConfig.type ?? routerConfig?.defaultPageType ?? TeleportPageType.auto;
-
-  // Resolve 'auto' to specific type if native behavior is desired
-  if (effectiveType == TeleportPageType.auto) {
-    // Only resolve to native page if no custom transition/dialog settings
-    if (effectiveTransition == null &&
-        pageConfig.opaque &&
-        pageConfig.barrierColor == null &&
-        !pageConfig.barrierDismissible) {
-      final platform = Theme.of(context).platform;
-      effectiveType =
-          (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS)
-              ? TeleportPageType.cupertino
-              : TeleportPageType.material;
-    }
-  }
+  final effectiveType = pageConfig.type ??
+      routerConfig?.defaultPageType ??
+      TeleportPageType.defaultType;
 
   // Construct specific pages
-  switch (effectiveType) {
-    case TeleportPageType.cupertino:
-      return CupertinoPage(
+  if (effectiveType == TeleportPageType.swipeBack) {
+    return CustomTransitionPage(
+      arguments: data,
+      name: state.name,
+      fullscreenDialog: pageConfig.fullscreenDialog,
+      opaque: false,
+      barrierColor: pageConfig.barrierColor,
+      barrierDismissible: pageConfig.barrierDismissible,
+      barrierLabel: pageConfig.barrierLabel,
+      maintainState: pageConfig.maintainState,
+      key: state.pageKey,
+      child: SwipeBackWrapper(
         child: child,
-        name: state.name,
-        arguments: data,
-        key: state.pageKey,
-        fullscreenDialog: pageConfig.fullscreenDialog,
-        maintainState: pageConfig.maintainState,
-      );
-    case TeleportPageType.swipeBack:
-      return CustomTransitionPage(
-        arguments: data,
-        name: state.name,
-        fullscreenDialog: pageConfig.fullscreenDialog,
-        opaque: false,
-        barrierColor: pageConfig.barrierColor,
-        barrierDismissible: pageConfig.barrierDismissible,
-        barrierLabel: pageConfig.barrierLabel,
-        maintainState: pageConfig.maintainState,
-        key: state.pageKey,
-        child: SwipeBackWrapper(
-          child: child,
-          edgeWidth: null, // Allow swipe from anywhere
-        ),
-        transitionDuration: tDur,
-        reverseTransitionDuration: rDur,
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return TeleportSlideTransition()
-              .buildTransitions(context, animation, secondaryAnimation, child);
-        },
-      );
-    case TeleportPageType.material:
-      return MaterialPage(
-        child: child,
-        name: state.name,
-        arguments: data,
-        key: state.pageKey,
-        fullscreenDialog: pageConfig.fullscreenDialog,
-        maintainState: pageConfig.maintainState,
-      );
-    default:
-      // Fall through to CustomTransitionPage
-      break;
+        edgeWidth: null, // Allow swipe from anywhere
+      ),
+      transitionDuration: tDur,
+      reverseTransitionDuration: rDur,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return TeleportSlideTransition().buildTransitions(
+          context,
+          animation,
+          secondaryAnimation,
+          child,
+        );
+      },
+    );
   }
 
   return CustomTransitionPage(
@@ -582,7 +550,12 @@ Page<dynamic> _createTeleportPage({
     reverseTransitionDuration: rDur,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       return (effectiveTransition ?? const TeleportCupertinoPageTransition())
-          .buildTransitions(context, animation, secondaryAnimation, child);
+          .buildTransitions(
+        context,
+        animation,
+        secondaryAnimation,
+        child,
+      );
     },
   );
 }
