@@ -19,20 +19,11 @@ import 'package:flutter/widgets.dart';
 /// ```
 /// Defines the type of page to use for a route.
 enum TeleportPageType {
-  /// Automatically choose based on platform and transition settings.
-  auto,
-
-  /// Force use of MaterialPage.
-  material,
-
-  /// Force use of CupertinoPage.
-  cupertino,
+  /// The default page type.
+  defaultType,
 
   /// Use SwipeBackWrapper (Left edge swipe to close).
   swipeBack,
-
-  /// Use a custom page builder (implied if `pageBuilder` is set).
-  custom,
 }
 
 class TeleportRoute {

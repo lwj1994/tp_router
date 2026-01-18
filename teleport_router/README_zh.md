@@ -227,7 +227,7 @@ class VipPage ...
   path: '/details',
   transition: TeleportSlideTransition(), // 右边滑入
   // 或者
-  type: TeleportPageType.swipeBack, // 全屏左滑返回 (类似 iOS)
+  type: TeleportPageType.swipeBack, // 全屏左滑返回
 )
 ```
 

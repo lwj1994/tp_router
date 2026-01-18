@@ -68,11 +68,8 @@ class TeleportRouterBuilder implements Builder {
           final element = annotated.element;
           if (element is! ClassElement) continue;
 
-          final routeData = _analyzeRoute(
-            element,
-            annotated.annotation,
-            input.path,
-          );
+          final routeData =
+              _analyzeRoute(element, annotated.annotation, input.path);
 
           if (routeData != null) {
             allRoutes.add(routeData);
@@ -266,10 +263,8 @@ class TeleportRouterBuilder implements Builder {
       redirect: _extractRedirect(annotation),
       transitionType: _extractTransitionType(annotation),
       transitionDuration: _extractDuration(annotation, 'transitionDuration'),
-      reverseTransitionDuration: _extractDuration(
-        annotation,
-        'reverseTransitionDuration',
-      ),
+      reverseTransitionDuration:
+          _extractDuration(annotation, 'reverseTransitionDuration'),
       parentNavigatorKey: parentNavigatorKey,
       onExit: onExit,
       fullscreenDialog: fullscreenDialog,
@@ -327,9 +322,7 @@ class TeleportRouterBuilder implements Builder {
       final element = pbType.element!;
       if (element.name == null) return null;
       return PageBuilderInfo(
-        name: element.name!,
-        importPath: element.library?.identifier,
-      );
+          name: element.name!, importPath: element.library?.identifier);
     }
     return null;
   }
@@ -383,9 +376,7 @@ class TeleportRouterBuilder implements Builder {
 
   /// Analyzes a class with @TeleportShellRoute annotation.
   ShellRouteData? _analyzeShellRoute(
-    Element element,
-    ConstantReader annotation,
-  ) {
+      Element element, ConstantReader annotation) {
     if (element is! ClassElement) return null;
     final className = element.name;
     if (className == null) return null;
@@ -513,9 +504,7 @@ class TeleportRouterBuilder implements Builder {
   }
 
   ParamData? _analyzeParameter(
-    FormalParameterElement param,
-    ClassElement classElement,
-  ) {
+      FormalParameterElement param, ClassElement classElement) {
     final paramName = param.name;
     if (paramName == null) return null;
     final paramType = param.type;
@@ -632,7 +621,7 @@ class TeleportRouterBuilder implements Builder {
 
     final index = reader.objectValue.getField('index')?.toIntValue();
     if (index != null) {
-      const types = ['auto', 'material', 'cupertino', 'swipeBack', 'custom'];
+      const types = ['defaultType', 'swipeBack'];
       if (index >= 0 && index < types.length) {
         return 'TeleportPageType.${types[index]}';
       }
