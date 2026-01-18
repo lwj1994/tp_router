@@ -1,4 +1,3 @@
-# 0.8.2
+# 0.8.3
 
-* Support new `TeleportPageType`: `defaultType` and `swipeBack`.
-* Update code generation to match updated annotation properties.
+* Support updated `TeleportPageType`.
