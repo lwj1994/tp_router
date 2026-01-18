@@ -1,3 +1,6 @@
+## 0.8.2
+* **Feature**: Added `pop()` extension method on `BuildContext` (`context.teleportRouter.pop()`) for easier navigation control.
+
 ## 0.8.1
 * **API Break**: Replaced `initialRoute` and `initialExtra` with `initialRouteData` (`TeleportRouteData`) in `TeleportRouter` constructor for better consistency.
 * **API Break**: Renamed `currentRoute` (getter on context/key) to return `TeleportRouteData` and updated internal naming consistency.
