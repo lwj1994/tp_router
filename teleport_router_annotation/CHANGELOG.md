@@ -1,4 +1,4 @@
-# 0.8.2
+# 0.8.3
 
-* Refactor `TeleportPageType` to remove `auto`, `material`, and `cupertino`.
-* Add `defaultType` and `swipeBack` to `TeleportPageType`.
+* Refactor `TeleportPageType` constants.
+* Fix issues with Cupertino transition background.
