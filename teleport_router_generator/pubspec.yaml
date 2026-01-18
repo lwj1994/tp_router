@@ -13,7 +13,7 @@ dependencies:
   build: ^4.0.3
   glob: ^2.1.0
   source_gen: ^4.1.0
-  teleport_router_annotation: ^0.8.2
+  teleport_router_annotation:
 
 dev_dependencies:
   build_test: 
