@@ -6,7 +6,11 @@
       "Bash(flutter pub cache:*)",
       "Bash(grep:*)",
       "Bash(dart run build_runner build:*)",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(dart analyze:*)",
+      "Bash(dart pub publish:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
